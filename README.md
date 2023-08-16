@@ -1,7 +1,3 @@
-#
-
-
 ## QtTrials
 
-
-some trials when play with Q
+some trials when play with Qt
