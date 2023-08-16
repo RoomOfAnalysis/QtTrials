@@ -14,3 +14,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED)
 
 add_subdirectory(QtSqliteTest)
+add_subdirectory(QtWidgetRecorder)
