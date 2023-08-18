@@ -15,3 +15,4 @@ find_package(Qt6 REQUIRED)
 
 add_subdirectory(QtSqliteTest)
 add_subdirectory(QtWidgetRecorder)
+add_subdirectory(QtScreenCapturer)

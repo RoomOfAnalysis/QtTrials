@@ -60,7 +60,7 @@ void QtWidgetRecorder::stop()
     QString program("ffmpeg");
 #endif
     QStringList arguments;
-    arguments << "-y"  // yes for output video overwritten
+    arguments << "-y" // yes for output video overwritten
               << "-framerate"
               << "30"
               << "-i" << QDir(m_tmp_dir_path).path() + "/frame_%d.png" << m_recorded_file_path;
@@ -77,8 +77,10 @@ void QtWidgetRecorder::capture_one_img()
 
 void QtWidgetRecorder::on_process_exit(int exit_code, QProcess::ExitStatus exit_status)
 {
-    if (exit_status != QProcess::NormalExit) qFatal() << m_process->errorString();
-    else qDebug() << m_process->readAllStandardOutput();
+    if (exit_status != QProcess::NormalExit)
+        qFatal() << m_process->errorString();
+    else
+        qDebug() << m_process->readAllStandardOutput();
 
     qDebug() << "tmp_dir removed" << QDir(m_tmp_dir_path).removeRecursively();
 }

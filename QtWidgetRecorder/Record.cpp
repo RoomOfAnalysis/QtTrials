@@ -7,8 +7,7 @@
 #include <QMovie>
 #include <QStandardPaths>
 
-Recorder::Recorder(QWidget* parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
+Recorder::Recorder(QWidget* parent): QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
@@ -40,8 +39,10 @@ void Recorder::file_open_slot()
         ui->label->setMovie(m_gif);
         m_gif->start();
 
-        m_recorder->set_record_path(
-            QDir(QStandardPaths::writableLocation(QStandardPaths::MoviesLocation)).filePath("test.mp4").toStdString().c_str());
+        m_recorder->set_record_path(QDir(QStandardPaths::writableLocation(QStandardPaths::MoviesLocation))
+                                        .filePath("test.mp4")
+                                        .toStdString()
+                                        .c_str());
     }
 }
 

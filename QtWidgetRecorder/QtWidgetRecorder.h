@@ -5,7 +5,7 @@
 
 class QTimer;
 
-class QtWidgetRecorder : public QObject
+class QtWidgetRecorder: public QObject
 {
     Q_OBJECT
 public:
