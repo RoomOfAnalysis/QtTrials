@@ -22,7 +22,7 @@ Capturer::Capturer()
 void Capturer::set_screen(QScreen* screen)
 {
     m_capturer->setScreen(screen);
-    qDebug() << m_capturer->error();  // FIXME: Qt6.5.1 installed with vcpkg not support screen capture on Windows?
+    qDebug() << m_capturer->error();
     qDebug() << screen << m_session->screenCapture()->screen();
 }
 

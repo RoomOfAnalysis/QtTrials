@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.6)
 
 if(WIN32)
     set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE INTERNAL "" FORCE)
@@ -17,6 +17,19 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+# for QtMultimedia ffmpeg backend
+# still need manually copy those dlls into target bin folder...
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+    libavcodec
+    libavdevice
+    libavfilter
+    libavformat
+    libswresample
+    libswscale
+    libavutil
+)
+
 add_executable(${PROJECT_NAME}
     Models.cpp Models.h
     Capturer.cpp Capturer.h
@@ -29,6 +42,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     PRIVATE Qt${QT_VERSION_MAJOR}::Multimedia
     PRIVATE Qt${QT_VERSION_MAJOR}::MultimediaWidgets
+    PRIVATE PkgConfig::LIBAV
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")

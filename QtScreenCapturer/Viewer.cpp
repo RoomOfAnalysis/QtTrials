@@ -10,7 +10,10 @@ Viewer::Viewer(QWidget* parent): QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
-    m_video_widget = new QVideoWidget(ui->widget);
+    auto layout = new QGridLayout();
+    m_video_widget = new QVideoWidget();
+    layout->addWidget(m_video_widget);
+    ui->widget->setLayout(layout);
 
     m_screen_list_model = new ScreenListModel(QGuiApplication::screens(), this);
     ui->ScreenListView->setModel(m_screen_list_model);
