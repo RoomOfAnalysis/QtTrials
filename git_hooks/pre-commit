@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# need config the hooks path first
+# git config core.hooksPath ./git_hooks
+
+echo "###### PRE-COMMIT git hook to format code ######"
+exec powershell.exe -NoProfile -ExecutionPolicy Bypass -file ".\format.ps1"
+exit
