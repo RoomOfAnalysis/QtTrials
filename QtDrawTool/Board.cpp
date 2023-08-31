@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 
-Board::Board(QWidget* parent) : QWidget(parent)
+Board::Board(QWidget* parent): QWidget(parent)
 {
     m_img.fill(Qt::black);
     setMouseTracking(true);
@@ -12,8 +12,8 @@ Board::Board(QWidget* parent) : QWidget(parent)
 
 void Board::saveImg()
 {
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save Image"), "",
-                                                    tr("*;;*.bmp;; *.png;; *.jpg;; *.tif;; *.GIF"));
+    QString filename =
+        QFileDialog::getSaveFileName(this, tr("Save Image"), "", tr("*;;*.bmp;; *.png;; *.jpg;; *.tif;; *.GIF"));
     if (filename.isEmpty())
         return;
     else
@@ -22,8 +22,8 @@ void Board::saveImg()
 
 void Board::openImg()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open Image"), "",
-                                                    tr("*;;*.bmp;; *.png;; *.jpg;; *.tif;; *.GIF"));
+    QString filename =
+        QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("*;;*.bmp;; *.png;; *.jpg;; *.tif;; *.GIF"));
     if (filename.isEmpty())
         return;
     else
@@ -68,7 +68,7 @@ void Board::paint(QImage* img)
     case Board::Shape::NONE:
         break;
     case Board::Shape::RECT:
-        painter.drawRect(m_start_pt.x(), m_start_pt.y(),  width, height);
+        painter.drawRect(m_start_pt.x(), m_start_pt.y(), width, height);
         break;
     case Board::Shape::CIRCLE:
         painter.drawEllipse(m_start_pt, width, height > 0 ? width : -width);

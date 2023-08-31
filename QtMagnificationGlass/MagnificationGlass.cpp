@@ -10,7 +10,8 @@ MagnificationGlass::MagnificationGlass(QWidget* parent): QLabel(parent)
     return;
 }
 
-void MagnificationGlass::magnify(const QImage& fromImage, const QPoint& fromPosition, QSize scopeSize, double magnification)
+void MagnificationGlass::magnify(const QImage& fromImage, const QPoint& fromPosition, QSize scopeSize,
+                                 double magnification, bool smooth)
 {
     if (!m_active) return;
 
@@ -23,8 +24,9 @@ void MagnificationGlass::magnify(const QImage& fromImage, const QPoint& fromPosi
     auto startIdx = (regionTopLeft.x() + regionTopLeft.y() * fromImage.width()) * (fromImage.depth() / 8);
     QImage magnified((fromImage.bits() + startIdx), scopeSize.width(), scopeSize.height(), fromImage.bytesPerLine(),
                      fromImage.format());
+    auto transform_flag = smooth ? Qt::SmoothTransformation : Qt::FastTransformation;
     QPixmap pMap = QPixmap::fromImage(
-        magnified.scaled(glassSize.width(), glassSize.height(), Qt::IgnoreAspectRatio, Qt::FastTransformation));
+        magnified.scaled(glassSize.width(), glassSize.height(), Qt::IgnoreAspectRatio, transform_flag));
 
     // TODO: expose style setter?
     QPixmap map(pMap.size());

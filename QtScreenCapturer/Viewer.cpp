@@ -32,7 +32,6 @@ Viewer::~Viewer()
     delete ui;
 }
 
-
 void Viewer::setup_connections()
 {
     connect(ui->ScreenListView->selectionModel(), &QItemSelectionModel::selectionChanged, this,

@@ -4,7 +4,7 @@
 
 class MagnificationGlass: public QLabel
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     explicit MagnificationGlass(QWidget* parent = nullptr);
     ~MagnificationGlass() = default;
@@ -12,7 +12,8 @@ public:
     bool is_active() const { return m_active; }
     void set_active(bool flag) { m_active = flag; }
 
-    void magnify(const QImage& fromImage, const QPoint& fromPosition, QSize scopeSize = {50, 50}, double magnification = 2.);
+    void magnify(const QImage& fromImage, const QPoint& fromPosition, QSize scopeSize = {50, 50},
+                 double magnification = 2., bool smooth = true);
 
 private:
     bool m_active{false};

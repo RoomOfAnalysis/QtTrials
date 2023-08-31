@@ -26,9 +26,7 @@ MainWindow::~MainWindow()
 void MainWindow::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton && ui->img_label->geometry().contains(event->pos()))
-    {
         m_glass->magnify(grab().toImage(), event->pos());
-    }
 }
 
 void MainWindow::setupConnections()
@@ -53,8 +51,8 @@ void MainWindow::on_hide()
 
 void MainWindow::on_file_open()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open Image"), "",
-                                                    tr("*;;*.bmp;; *.png;; *.jpg;; *.tif;; *.GIF"));
+    QString filename =
+        QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("*;;*.bmp;; *.png;; *.jpg;; *.tif;; *.GIF"));
     if (filename.isEmpty())
         return;
     else

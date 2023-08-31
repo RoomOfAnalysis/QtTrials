@@ -8,9 +8,9 @@ class QScreenCapture;
 class QMediaCaptureSession;
 class QScreen;
 
-class Capturer : public QObject
+class Capturer: public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     Capturer();
     ~Capturer() = default;

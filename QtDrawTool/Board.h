@@ -5,9 +5,9 @@
 #include <QWidget>
 #include <QPen>
 
-class Board : public QWidget
+class Board: public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     enum class Shape
     {
