@@ -32,6 +32,7 @@ pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
 
 add_executable(${PROJECT_NAME}
     main.cpp
+    CameraSource.cpp CameraSource.h
 )
 
 target_link_libraries(${PROJECT_NAME}

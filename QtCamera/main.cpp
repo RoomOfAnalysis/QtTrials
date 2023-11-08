@@ -1,10 +1,11 @@
 #include <QCamera>
 #include <QMediaDevices>
-#include <QMediaCaptureSession>
 #include <QVideoWidget>
 #include <QAudioDevice>
 #include <QApplication>
 #include <QDebug>
+
+#include "CameraSource.h"
 
 int main(int argc, char* argv[])
 {
@@ -14,37 +15,29 @@ int main(int argc, char* argv[])
     //for (const QAudioDevice& audioDevice : audios)
     //    qDebug() << audioDevice.description();
 
-    QCamera* camera = nullptr;
+    CameraSource* cs = nullptr;
     const QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
     if (cameras.count() > 0)
     {
         // choose first available camera
         qDebug() << cameras[0].description();
-        camera = new QCamera(cameras[0]);
+        auto const& fs = cameras[0].videoFormats();
+        qDebug() << "available video format: ";
+        for (auto const& f : fs)
+            qDebug() << "\n resolution: " << f.resolution() << "\n min frame rate: " << f.minFrameRate()
+                     << "\n max frame rate: " << f.maxFrameRate() << "\n pixel format: " << f.pixelFormat();
+        cs = new CameraSource(cameras[0]);
     }
 
-    if (camera)
+    if (cs)
     {
-        QMediaCaptureSession* captureSession = new QMediaCaptureSession();
-        captureSession->setCamera(camera);
-        auto* viewfinder = new QVideoWidget;
-        captureSession->setVideoOutput(viewfinder);
-        viewfinder->show();
+        QObject::connect(cs, &CameraSource::fps_changed, [&]() { qDebug() << "fps: " << cs->fps(); });
 
-        camera->start();
+        auto* vw = new QVideoWidget;
+        cs->set_video_sink(vw->videoSink());
+        cs->start_cam();
 
-        qDebug() << "error: "
-                 << camera->error()
-                 //<< "\n state:" << camera->state()  // unavailable in Qt 6.5
-                 //<< "\n status: " << camera->status()
-                 << "\n errorstring: "
-                 << camera->errorString()
-                 //<< "\n camptureMode: " << camera-captureMode()
-                 //<< "\n camera.lockStatus: " << camera->lockStatus()
-                 //<< "\n availableMetaData: " << camera->availableMetaData()
-                 << "\n camera.isAvailable: " << camera->isAvailable() << "\n camera.isActive: " << camera->isActive()
-                 << "\n viewfinder.isEnabled: " << viewfinder->isEnabled()
-                 << "\n viewfinder.isVisible: " << viewfinder->isVisible();
+        vw->show();
     }
 
     return app.exec();
