@@ -53,6 +53,11 @@ int CameraSource::fps() const
     return m_fps;
 }
 
+QMediaCaptureSession& CameraSource::get_cap_session()
+{
+    return m_cap;
+}
+
 void CameraSource::frame_handle(QVideoFrame const& frame)
 {
     QVideoFrame f = frame; // shallow copy

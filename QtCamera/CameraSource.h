@@ -18,6 +18,7 @@ public:
 
     [[nodiscard]] QVideoSink* video_sink() const;
     [[nodiscard]] int fps() const;
+    [[nodiscard]] QMediaCaptureSession& get_cap_session();
 
     void start_cam();
     void stop_cam();

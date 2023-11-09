@@ -4,6 +4,10 @@
 #include <QAudioDevice>
 #include <QApplication>
 #include <QDebug>
+#include <QMediaRecorder>
+#include <QUrl>
+#include <QMediaFormat>
+#include <QTimer>
 
 #include "CameraSource.h"
 
@@ -36,8 +40,33 @@ int main(int argc, char* argv[])
         auto* vw = new QVideoWidget;
         cs->set_video_sink(vw->videoSink());
         cs->start_cam();
-
         vw->show();
+
+        auto& cap = cs->get_cap_session();
+        auto* recorder = new QMediaRecorder(&cap);
+        cap.setRecorder(recorder);
+        // https://doc.qt.io/qt-6/qmediarecorder.html#setVideoResolution
+        // FIXME: seems not able to set a higher resolution even the camera supported, it will lead to unknown error in output file...
+        recorder->setVideoResolution(800, 450);
+        recorder->setQuality(QMediaRecorder::HighQuality);
+        recorder->setVideoFrameRate(60);
+        recorder->setOutputLocation(QUrl::fromLocalFile(QCoreApplication::applicationDirPath() + "/../test.mp4"));
+        QMediaFormat media_format(QMediaFormat::MPEG4);
+        media_format.setAudioCodec(QMediaFormat::AudioCodec::AAC);
+        media_format.setVideoCodec(QMediaFormat::VideoCodec::H264);
+        recorder->setMediaFormat(media_format);
+        QObject::connect(recorder, &QMediaRecorder::errorOccurred, [&]() { qDebug() << recorder->errorString(); });
+        qDebug() << recorder->isAvailable();
+        recorder->record();
+
+        auto* timer = new QTimer();
+        timer->setInterval(10 * 1000);
+        QObject::connect(timer, &QTimer::timeout, [&]() {
+            recorder->stop();
+            qDebug() << recorder->duration() / 1000;
+            app.quit();
+        });
+        timer->start();
     }
 
     return app.exec();
