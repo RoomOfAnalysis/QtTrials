@@ -34,6 +34,8 @@ add_executable(${PROJECT_NAME}
     Capturer.cpp Capturer.h
     FrameWriter.cpp FrameWriter.h
     FrameReader.cpp FrameReader.h
+    FrameWriterMmap.cpp FrameWriterMmap.h
+    FrameReaderMmap.cpp FrameReaderMmap.h
     Viewer.cpp Viewer.h Viewer.ui
     main.cpp
 )

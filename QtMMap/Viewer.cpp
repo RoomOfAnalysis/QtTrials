@@ -4,6 +4,8 @@
 #include "Capturer.h"
 #include "FrameReader.h"
 #include "FrameWriter.h"
+#include "FrameReaderMmap.h"
+#include "FrameWriterMmap.h"
 
 #include <QVideoWidget>
 #include <QApplication>
@@ -21,11 +23,16 @@ Viewer::Viewer(QWidget* parent): QMainWindow(parent), ui(new Ui::MainWindow)
     m_capturer = new Capturer();
     m_capturer->set_screen(QApplication::screens()[0]);
 
+#ifdef USE_MMAP
+    m_frame_writer = new FrameWriterMmap();
+    m_frame_reader = new FrameReaderMmap();
+#else
     m_frame_writer = new FrameWriter();
+    m_frame_reader = new FrameReader();
+#endif
+
     m_capturer->set_video_sink(m_frame_writer);
     m_frame_writer->set_video_sink(m_video1->videoSink());
-
-    m_frame_reader = new FrameReader();
     m_frame_reader->set_video_sink(m_video2->videoSink());
 
     setup_connections();
@@ -45,8 +52,13 @@ Viewer::~Viewer()
 
 void Viewer::setup_connections()
 {
+#ifdef USE_MMAP
+    connect(ui->startBtn, &QPushButton::clicked, m_frame_reader, &FrameReaderMmap::start);
+    connect(ui->stopBtn, &QPushButton::clicked, m_frame_reader, &FrameReaderMmap::stop);
+#else
     connect(ui->startBtn, &QPushButton::clicked, m_frame_reader, &FrameReader::start);
     connect(ui->stopBtn, &QPushButton::clicked, m_frame_reader, &FrameReader::stop);
+#endif
 }
 
 void Viewer::start()
