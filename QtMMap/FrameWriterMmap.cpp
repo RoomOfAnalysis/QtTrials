@@ -4,6 +4,10 @@
 #include <QBuffer>
 #include <QDebug>
 
+#ifdef DISPLAY_FPS
+#include <QTimer>
+#endif
+
 FrameWriterMmap::FrameWriterMmap(QString filename, QString sem_key, QObject* parent)
     : QVideoSink(parent), m_mmap(filename), m_sem(sem_key, 1, QSystemSemaphore::Create)
 {
@@ -12,6 +16,16 @@ FrameWriterMmap::FrameWriterMmap(QString filename, QString sem_key, QObject* par
     qDebug() << "mmap resize" << m_mmap.resize(static_cast<qint64>(1920 * 1080 * 4) * 2);
     m_mmap_addr = m_mmap.map(0, m_mmap.size());
     connect(this, &QVideoSink::videoFrameChanged, this, &FrameWriterMmap::frame_handle);
+
+#ifdef DISPLAY_FPS
+    m_fps_timer = new QTimer(this);
+    m_fps_timer->setInterval(1000); // 1s
+    connect(m_fps_timer, &QTimer::timeout, this, [this]() {
+        qDebug() << "fps:" << m_fps;
+        m_fps = 0;
+    });
+    m_fps_timer->start();
+#endif
 }
 
 FrameWriterMmap::~FrameWriterMmap()
@@ -87,4 +101,8 @@ void FrameWriterMmap::frame_handle(QVideoFrame const& frame)
         m_sem.release();
     }
     if (m_video_sink) m_video_sink->setVideoFrame(frame);
+
+#ifdef DISPLAY_FPS
+    m_fps++;
+#endif
 }

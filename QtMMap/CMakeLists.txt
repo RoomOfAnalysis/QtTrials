@@ -40,6 +40,11 @@ add_executable(${PROJECT_NAME}
     main.cpp
 )
 
+add_compile_definitions(
+    USE_MMAP
+    DISPLAY_FPS
+)
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     PRIVATE Qt${QT_VERSION_MAJOR}::Multimedia

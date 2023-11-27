@@ -2,6 +2,10 @@
 
 #include <memory>
 
+#ifdef DISPLAY_FPS
+#include <atomic>
+#endif
+
 #include <QVideoSink>
 #include <QPointer>
 #include <QSharedMemory>
@@ -30,4 +34,9 @@ private:
     QPointer<QVideoSink> m_video_sink = nullptr;
 
     QSharedMemory m_shared_memory;
+
+#ifdef DISPLAY_FPS
+    std::atomic<int> m_fps = 0;
+    QTimer* m_fps_timer = nullptr;
+#endif
 };

@@ -2,6 +2,10 @@
 
 #include <memory>
 
+#ifdef DISPLAY_FPS
+#include <atomic>
+#endif
+
 #include <QVideoSink>
 #include <QPointer>
 #include <QFile>
@@ -38,4 +42,9 @@ private:
     uchar* m_mmap_addr = nullptr;
 
     QSystemSemaphore m_sem;
+
+#ifdef DISPLAY_FPS
+    std::atomic<int> m_fps = 0;
+    QTimer* m_fps_timer = nullptr;
+#endif
 };

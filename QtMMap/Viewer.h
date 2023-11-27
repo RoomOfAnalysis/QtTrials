@@ -9,8 +9,6 @@ class FrameReaderMmap;
 class FrameWriterMmap;
 class QVideoWidget;
 
-#define USE_MMAP
-
 namespace Ui
 {
     class MainWindow;

@@ -4,8 +4,11 @@
 #include "Capturer.h"
 #include "FrameReader.h"
 #include "FrameWriter.h"
+
+#ifdef USE_MMAP
 #include "FrameReaderMmap.h"
 #include "FrameWriterMmap.h"
+#endif
 
 #include <QVideoWidget>
 #include <QApplication>

@@ -4,11 +4,25 @@
 #include <QBuffer>
 #include <QDebug>
 
+#ifdef DISPLAY_FPS
+#include <QTimer>
+#endif
+
 FrameWriter::FrameWriter(QString key, QObject* parent): QVideoSink(parent), m_shared_memory(key)
 {
     connect(this, &QVideoSink::videoFrameChanged, this, &FrameWriter::frame_handle);
     qDebug() << (m_shared_memory.create(sizeof(char) * 1920 * 1080 * 4 * 10) ? "successfully" : "failed to")
              << "create shared memory with key: " << key << "with nativeKey:" << m_shared_memory.nativeKey();
+
+#ifdef DISPLAY_FPS
+    m_fps_timer = new QTimer(this);
+    m_fps_timer->setInterval(1000); // 1s
+    connect(m_fps_timer, &QTimer::timeout, this, [this]() {
+        qDebug() << "fps:" << m_fps;
+        m_fps = 0;
+    });
+    m_fps_timer->start();
+#endif
 }
 
 void FrameWriter::set_video_sink(QVideoSink* video_sink)
@@ -99,4 +113,8 @@ void FrameWriter::frame_handle(QVideoFrame const& frame)
         }
     }
     if (m_video_sink) m_video_sink->setVideoFrame(frame);
+
+#ifdef DISPLAY_FPS
+    m_fps++;
+#endif
 }
