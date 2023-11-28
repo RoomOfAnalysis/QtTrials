@@ -7,6 +7,8 @@ class FrameReader;
 class FrameWriter;
 class FrameReaderMmap;
 class FrameWriterMmap;
+class FrameReaderSocket;
+class FrameWriterSocket;
 class QVideoWidget;
 
 namespace Ui
@@ -34,6 +36,9 @@ private:
 #ifdef USE_MMAP
     FrameReaderMmap* m_frame_reader = nullptr;
     FrameWriterMmap* m_frame_writer = nullptr;
+#elif defined(USE_SOCKET)
+    FrameReaderSocket* m_frame_reader = nullptr;
+    FrameWriterSocket* m_frame_writer = nullptr;
 #else
     FrameReader* m_frame_reader = nullptr;
     FrameWriter* m_frame_writer = nullptr;

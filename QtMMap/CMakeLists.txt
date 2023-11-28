@@ -11,7 +11,7 @@ set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE INTERNAL "" FORCE)  # -Wno-dev
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia MultimediaWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia MultimediaWidgets Network)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -36,12 +36,15 @@ add_executable(${PROJECT_NAME}
     FrameReader.cpp FrameReader.h
     FrameWriterMmap.cpp FrameWriterMmap.h
     FrameReaderMmap.cpp FrameReaderMmap.h
+    FrameWriterSocket.cpp FrameWriterSocket.h
+    FrameReaderSocket.cpp FrameReaderSocket.h
     Viewer.cpp Viewer.h Viewer.ui
     main.cpp
 )
 
 add_compile_definitions(
-    USE_MMAP
+    #USE_MMAP
+    USE_SOCKET
     DISPLAY_FPS
 )
 
@@ -49,6 +52,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     PRIVATE Qt${QT_VERSION_MAJOR}::Multimedia
     PRIVATE Qt${QT_VERSION_MAJOR}::MultimediaWidgets
+    PRIVATE Qt${QT_VERSION_MAJOR}::Network
     PRIVATE PkgConfig::LIBAV
 )
 

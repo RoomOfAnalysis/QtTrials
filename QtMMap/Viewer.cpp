@@ -2,12 +2,16 @@
 
 #include "Viewer.h"
 #include "Capturer.h"
-#include "FrameReader.h"
-#include "FrameWriter.h"
 
 #ifdef USE_MMAP
 #include "FrameReaderMmap.h"
 #include "FrameWriterMmap.h"
+#elif defined(USE_SOCKET)
+#include "FrameReaderSocket.h"
+#include "FrameWriterSocket.h"
+#else
+#include "FrameReader.h"
+#include "FrameWriter.h"
 #endif
 
 #include <QVideoWidget>
@@ -29,6 +33,9 @@ Viewer::Viewer(QWidget* parent): QMainWindow(parent), ui(new Ui::MainWindow)
 #ifdef USE_MMAP
     m_frame_writer = new FrameWriterMmap();
     m_frame_reader = new FrameReaderMmap();
+#elif defined(USE_SOCKET)
+    m_frame_writer = new FrameWriterSocket();
+    m_frame_reader = new FrameReaderSocket();
 #else
     m_frame_writer = new FrameWriter();
     m_frame_reader = new FrameReader();
@@ -58,6 +65,9 @@ void Viewer::setup_connections()
 #ifdef USE_MMAP
     connect(ui->startBtn, &QPushButton::clicked, m_frame_reader, &FrameReaderMmap::start);
     connect(ui->stopBtn, &QPushButton::clicked, m_frame_reader, &FrameReaderMmap::stop);
+#elif defined(USE_SOCKET)
+    connect(ui->startBtn, &QPushButton::clicked, m_frame_reader, &FrameReaderSocket::start);
+    connect(ui->stopBtn, &QPushButton::clicked, m_frame_reader, &FrameReaderSocket::stop);
 #else
     connect(ui->startBtn, &QPushButton::clicked, m_frame_reader, &FrameReader::start);
     connect(ui->stopBtn, &QPushButton::clicked, m_frame_reader, &FrameReader::stop);
