@@ -7,15 +7,14 @@ CameraSource::CameraSource(QCameraDevice const& device, QObject* parent): QVideo
 {
     m_cam = new QCamera(device, this);
 
-    // FIXME: seems no way to change the camera fps, even choose one from the available video formats still no effect?
-    // very confused... without setting the fps is always 30, but it will change to 60 after setting the camera format with any value
-    //auto const& fs = device.videoFormats();
-    //auto f = fs[0];
-    //qDebug() << f.minFrameRate() << f.maxFrameRate();
-    //for (auto const ff : fs)
-    //    if (qRound((ff.minFrameRate() + ff.maxFrameRate()) / 2.0) == 30) f = ff;
-    //qDebug() << f.minFrameRate() << f.maxFrameRate();
-    //m_cam->setCameraFormat(f);
+    // IMPORTANT: need set camera format for a consistent display fps, frame handling and make the recorder work correctly
+    auto const& fs = device.videoFormats();
+    auto f = fs[0];
+    qDebug() << f.minFrameRate() << f.maxFrameRate();
+    for (auto const ff : fs)
+        if (qRound((ff.minFrameRate() + ff.maxFrameRate()) / 2.0) == 30) f = ff;
+    qDebug() << f.minFrameRate() << f.maxFrameRate();
+    m_cam->setCameraFormat(f);
 
     m_cap.setCamera(m_cam);
     m_cap.setVideoSink(this);
@@ -64,8 +63,6 @@ void CameraSource::frame_handle(QVideoFrame const& frame)
     if (f.isValid() && f.map(QVideoFrame::ReadOnly))
     {
         // process every frame img
-        // FIXME: memory usage is quite high here...
-        // 19GB peak increase and release at 30fps, but only 5GB at 60fps??
         //auto img = f.toImage().convertToFormat(QImage::Format_RGB888);
         f.unmap();
     }

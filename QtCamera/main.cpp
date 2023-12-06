@@ -46,8 +46,7 @@ int main(int argc, char* argv[])
         auto* recorder = new QMediaRecorder(&cap);
         cap.setRecorder(recorder);
         // https://doc.qt.io/qt-6/qmediarecorder.html#setVideoResolution
-        // FIXME: seems not able to set a higher resolution even the camera supported, it will lead to unknown error in output file...
-        recorder->setVideoResolution(800, 450);
+        //recorder->setVideoResolution(800, 450);
         recorder->setQuality(QMediaRecorder::HighQuality);
         recorder->setVideoFrameRate(60);
         recorder->setOutputLocation(QUrl::fromLocalFile(QCoreApplication::applicationDirPath() + "/../test.mp4"));

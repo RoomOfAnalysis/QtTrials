@@ -34,17 +34,17 @@ pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
 find_package(OpenCV CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME}
-    # main.cpp
-    # CameraSource.cpp CameraSource.h
-    mainCV.cpp
+    main.cpp
+    CameraSource.cpp CameraSource.h
+    # mainCV.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
-    # PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
-    # PRIVATE Qt${QT_VERSION_MAJOR}::Multimedia
-    # PRIVATE Qt${QT_VERSION_MAJOR}::MultimediaWidgets
-    # PRIVATE PkgConfig::LIBAV
-    PRIVATE ${OpenCV_LIBS}
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+    PRIVATE Qt${QT_VERSION_MAJOR}::Multimedia
+    PRIVATE Qt${QT_VERSION_MAJOR}::MultimediaWidgets
+    PRIVATE PkgConfig::LIBAV
+    # PRIVATE ${OpenCV_LIBS}
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
