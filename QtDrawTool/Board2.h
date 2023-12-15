@@ -1,10 +1,11 @@
 #pragma once
 
-#include <QWidget>
+#include <QLabel>
 #include <QPen>
 #include <QUndoCommand>
 #include <QGraphicsScene>
 #include <QGraphicsItem>
+#include <QGraphicsView>
 
 class Board: public QWidget
 {
@@ -29,35 +30,53 @@ private:
     private:
         QGraphicsScene* m_scene = nullptr;
         QGraphicsItem* m_item = nullptr;
+        QPen m_pen{};
+        QBrush m_brush{};
+    };
+
+    class BoardGraphicsView: public QGraphicsView
+    {
+    public:
+        explicit BoardGraphicsView(QWidget* parent = nullptr);
+
+        void undo();
+        void redo();
+        void reset();
+
+        QUndoStack* undoStack() const { return m_undo_stack; }
+
+    protected:
+        void mousePressEvent(QMouseEvent* event) override;
+        void mouseReleaseEvent(QMouseEvent* event) override;
+        void resizeEvent(QResizeEvent* event) override;
+
+    public:
+        Board::Shape m_shape{Board::Shape::CIRCLE};
+        QPen m_pen{Qt::red, 5, Qt::SolidLine};
+        QBrush m_brush{Qt::transparent};
+
+    private:
+        QGraphicsScene* m_scene = nullptr;
+        QUndoStack* m_undo_stack = nullptr;
+        QPoint m_start_pt{}, m_end_pt{};
     };
 
 public:
     explicit Board(QWidget* parent = nullptr);
     ~Board() = default;
 
-    Shape& shape() { return m_shape; }
-    QPen* pen() { return &m_pen; }
-    QBrush* brush() { return &m_brush; }
+    Shape& shape() { return m_view->m_shape; }
+    QPen* pen() { return &m_view->m_pen; }
+    QBrush* brush() { return &m_view->m_brush; }
 
     void saveImg();
     void openImg();
 
-    void undo();
-    void redo();
-
-    void reset();
-
-protected:
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
+    void undo() { m_view->undo(); }
+    void redo() { m_view->redo(); }
+    void reset() { m_view->reset(); }
 
 private:
     QGraphicsScene* m_scene = nullptr;
-    QUndoStack* m_undo_stack = nullptr;
-
-    Shape m_shape{Shape::CIRCLE};
-    QPen m_pen{Qt::red, 5, Qt::SolidLine};
-    QBrush m_brush{Qt::transparent};
-
-    QPoint m_start_pt{}, m_end_pt{};
+    BoardGraphicsView* m_view = nullptr;
 };

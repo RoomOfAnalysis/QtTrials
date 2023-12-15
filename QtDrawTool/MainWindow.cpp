@@ -28,6 +28,7 @@ void MainWindow::setupConnections()
 
     connect(ui->undo_btn, &QPushButton::clicked, this, &MainWindow::on_undo);
     connect(ui->redo_btn, &QPushButton::clicked, this, &MainWindow::on_redo);
+    connect(ui->reset_btn, &QPushButton::clicked, this, &MainWindow::on_reset);
 }
 
 void MainWindow::on_file_open()
@@ -53,4 +54,9 @@ void MainWindow::on_redo()
 void MainWindow::on_undo()
 {
     ui->board->undo();
+}
+
+void MainWindow::on_reset()
+{
+    ui->board->reset();
 }

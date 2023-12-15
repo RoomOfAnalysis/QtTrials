@@ -1,6 +1,5 @@
 #include "Board2.h"
 
-#include <QGraphicsView>
 #include <QFileDialog>
 #include <QPainter>
 #include <QMouseEvent>
@@ -12,24 +11,57 @@ Board::DrawShape::DrawShape(QGraphicsScene* scene, Board::Shape shape, QPoint st
                             QBrush* brush)
     : m_scene(scene)
 {
-    auto width = end_pt.x() - start_pt.x();
-    auto height = end_pt.y() - start_pt.y();
+    // incorrect position due to it is under [item coordinates](https://doc.qt.io/qt-6/qgraphicsscene.html#addEllipse)
+    // need convert it
+    auto view = m_scene->views()[0];
+    auto s_pt = view->mapToScene(start_pt);
+    auto e_pt = view->mapToScene(end_pt);
 
-    QPen p;
-    if (pen) p = *pen;
-    QBrush b;
-    if (brush) b = *brush;
+    if (pen) m_pen = *pen;
+    if (brush) m_brush = *brush;
 
     switch (shape)
     {
     case Shape::RECT:
-        m_item = m_scene->addRect(start_pt.x(), start_pt.y(), width, height > 0 ? width : -width, p, b);
-        break;
+        {
+            auto tmp_item = new QGraphicsRectItem(QRectF(s_pt, e_pt));
+            tmp_item->setPen(m_pen);
+            tmp_item->setBrush(m_brush);
+            m_item = tmp_item;
+            break;
+        }
     case Shape::CIRCLE:
-        // FIXME: incorrect position due to it is under [item coordinates](https://doc.qt.io/qt-6/qgraphicsscene.html#addEllipse)
-        // use [this](https://doc.qt.io/qt-6/qgraphicsitem.html#mapFromScene)?
-        m_item = m_scene->addEllipse(start_pt.x(), start_pt.y(), width, height > 0 ? width : -width, p, b);
-        break;
+        {
+            // center + radius
+            auto radius = std::sqrt(QPointF::dotProduct(e_pt - s_pt, e_pt - s_pt));
+            //s_pt.setX(s_pt.x() - radius);
+            //s_pt.setY(s_pt.y() - radius);
+            //auto tmp_item = new QGraphicsEllipseItem(s_pt.x(), s_pt.y(), radius * 2, radius * 2);
+
+            // fix circle deform at first drawing...
+            // FIXME: it looks like a circle but radius is incorrect...
+            auto t = view->transform();
+            t /= t.determinant();
+            qDebug() << t;
+            auto radius_x = radius / t.m11();
+            auto radius_y = radius / t.m22();
+            s_pt.setX(s_pt.x() - radius_x);
+            s_pt.setY(s_pt.y() - radius_y);
+            auto tmp_item = new QGraphicsEllipseItem(s_pt.x(), s_pt.y(), radius_x * 2, radius_y * 2);
+
+            tmp_item->setPen(m_pen);
+            tmp_item->setBrush(m_brush);
+            m_item = tmp_item;
+            break;
+        }
+    case Shape::ELLIPSE:
+        {
+            auto tmp_item = new QGraphicsEllipseItem(QRectF(s_pt, e_pt));
+            tmp_item->setPen(m_pen);
+            tmp_item->setBrush(m_brush);
+            m_item = tmp_item;
+            break;
+        }
     default:
         qDebug() << "Shape not supported";
         break;
@@ -53,24 +85,79 @@ void Board::DrawShape::redo()
     m_scene->update();
 }
 
-Board::Board(QWidget* parent): QWidget(parent)
+Board::BoardGraphicsView::BoardGraphicsView(QWidget* parent): QGraphicsView(parent)
 {
-    m_scene = new QGraphicsScene(this);
+    m_scene = new QGraphicsScene();
+    setSceneRect(rect());
+    setScene(m_scene);
     m_undo_stack = new QUndoStack(this);
 
-    auto* view = new QGraphicsView(m_scene);
-    view->setAttribute(Qt::WA_TransparentForMouseEvents);
-    QVBoxLayout* pLayout = new QVBoxLayout();
-    pLayout->addWidget(view);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setStyleSheet("background-color: transparent;");
+    setMouseTracking(true);
+}
 
-    auto* undo_view = new QUndoView(m_undo_stack);
+void Board::BoardGraphicsView::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton) m_start_pt = event->pos();
+}
+
+void Board::BoardGraphicsView::mouseReleaseEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        m_end_pt = event->pos();
+        m_undo_stack->push(new DrawShape(m_scene, m_shape, m_start_pt, m_end_pt, &m_pen, &m_brush));
+    }
+}
+
+void Board::BoardGraphicsView::resizeEvent(QResizeEvent* event)
+{
+    QGraphicsView::resizeEvent(event);
+
+    auto sz = sceneRect().size();
+    auto n_sz = event->size();
+    qreal scale_x = n_sz.width() / (qreal)sz.width();   // m11
+    qreal scale_y = n_sz.height() / (qreal)sz.height(); // m22
+    //auto t = transform();
+    //setTransform(QTransform(scale_x, t.m12(), t.m13(), t.m21(), scale_y, t.m23(), t.m31(), t.m32(), t.m33()));
+    setTransform(QTransform::fromScale(scale_x, scale_y));
+}
+
+void Board::BoardGraphicsView::undo()
+{
+    m_undo_stack->undo();
+}
+
+void Board::BoardGraphicsView::redo()
+{
+    m_undo_stack->redo();
+}
+
+void Board::BoardGraphicsView::reset()
+{
+    m_scene->clear();
+    m_undo_stack->clear();
+
+    m_scene->update();
+}
+
+Board::Board(QWidget* parent): QWidget(parent)
+{
+    m_view = new BoardGraphicsView();
+    m_scene = m_view->scene();
+    QVBoxLayout* pLayout = new QVBoxLayout();
+    pLayout->addWidget(m_view);
+
+    auto* undo_view = new QUndoView(m_view->undoStack());
     QHBoxLayout* pHLayout = new QHBoxLayout();
     pHLayout->addLayout(pLayout);
     pHLayout->addWidget(undo_view);
+    pHLayout->setStretch(0, 1);
+    pHLayout->setStretch(1, 1);
 
     this->setLayout(pHLayout);
-
-    setMouseTracking(true);
 }
 
 void Board::saveImg()
@@ -90,42 +177,5 @@ void Board::openImg()
     if (filename.isEmpty())
         return;
     else
-    {
-        auto* item = new QGraphicsPixmapItem();
-        item->setPixmap(QPixmap(filename));
-        m_scene->addItem(item);
-    }
-}
-
-void Board::undo()
-{
-    m_undo_stack->undo();
-}
-
-void Board::redo()
-{
-    m_undo_stack->redo();
-}
-
-void Board::reset()
-{
-    m_undo_stack->clear();
-
-    update();
-}
-
-void Board::mousePressEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::LeftButton) m_start_pt = event->pos();
-}
-
-void Board::mouseReleaseEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
-        m_end_pt = event->pos();
-
-        m_undo_stack->push(new DrawShape(m_scene, m_shape, m_start_pt, m_end_pt, &m_pen, &m_brush));
-        qDebug() << "draw";
-    }
+        m_view->setStyleSheet(QString("border-image: url(%1) 0 0 0 0 stretch stretch;").arg(filename));
 }

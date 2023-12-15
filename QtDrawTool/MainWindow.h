@@ -23,6 +23,7 @@ private slots:
     void on_file_reset();
     void on_redo();
     void on_undo();
+    void on_reset();
 
 private:
     Ui::MainWindow* ui;
