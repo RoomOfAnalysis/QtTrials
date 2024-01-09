@@ -28,7 +28,7 @@ static int get_events(void* sock)
     }
 }
 
-ZMQClient::ZMQClient(QObject* parent): m_id{QUuid::createUuid().toByteArray()}
+ZMQClient::ZMQClient(QObject* parent): QObject(parent), m_id{QUuid::createUuid().toByteArray()}
 {
     m_ctx = zmq_ctx_new();
     assert(m_ctx != nullptr);
@@ -111,35 +111,29 @@ bool ZMQClient::send(QList<QByteArray> const& message)
 }
 QList<QByteArray> ZMQClient::receive()
 {
-    if (m_can_read)
+    QList<QByteArray> out;
+    do
     {
-        QList<QByteArray> out;
-        bool success = true;
-        do
+        zmq_msg_t msg;
+        int ret = zmq_msg_init(&msg);
+        assert(ret == 0);
+
+        ret = zmq_msg_recv(&msg, m_socket, ZMQ_DONTWAIT);
+        if (ret < 0)
         {
-            zmq_msg_t msg;
-            int ret = zmq_msg_init(&msg);
-            assert(ret == 0);
-
-            ret = zmq_msg_recv(&msg, m_socket, ZMQ_DONTWAIT);
-            if (ret < 0)
-            {
-                ret = zmq_msg_close(&msg);
-                assert(ret == 0);
-
-                success = false;
-                break;
-            }
-            QByteArray buf((char const*)zmq_msg_data(&msg), zmq_msg_size(&msg));
             ret = zmq_msg_close(&msg);
             assert(ret == 0);
 
-            out += buf;
-        } while (get_rcvmore(m_socket));
+            break;
+        }
+        QByteArray buf((char const*)zmq_msg_data(&msg), zmq_msg_size(&msg));
+        ret = zmq_msg_close(&msg);
+        assert(ret == 0);
 
-        if (success) return out;
-    }
-    return {};
+        out += buf;
+    } while (get_rcvmore(m_socket));
+
+    return out;
 }
 
 void ZMQClient::read_notifier_activated()
