@@ -43,6 +43,12 @@ void QtFrameHandler::frame_handle(QVideoFrame const& frame)
 
         if (m_frame_processor) m_frame_processor(&img);
 
+        //\note: after image processing, the result image may not fit for the QVideoFrame
+        // e.g. QVideoFrame requires YUV420 but QImage is RGBA
+        // https://stackoverflow.com/questions/71407367/how-to-convert-qimage-to-qvideoframe-so-i-would-set-it-as-frame-for-videosink-qt
+        // since the libyuv built from vcpkg on windows with MSVC is very slow (https://github.com/microsoft/vcpkg/issues/28446)
+        // better use this repo's simple QtImageViewer to display the processed image
+
         if (auto new_frame =
                 QVideoFrame(QVideoFrameFormat(img.size(), QVideoFrameFormat::pixelFormatFromImageFormat(img.format())));
             new_frame.isValid() && new_frame.map(QVideoFrame::WriteOnly))
