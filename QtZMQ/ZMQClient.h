@@ -30,6 +30,7 @@ private:
     QByteArray m_address{};
     QByteArray m_id{};
     QSocketNotifier* m_read_notifier = nullptr;
+    QSocketNotifier* m_write_notifier = nullptr;
     void* m_ctx = nullptr;
     void* m_socket = nullptr;
     bool m_can_read = false;

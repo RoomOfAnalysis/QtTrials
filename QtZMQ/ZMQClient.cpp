@@ -45,8 +45,11 @@ ZMQClient::ZMQClient(QObject* parent): QObject(parent), m_id{QUuid::createUuid()
     ret = zmq_getsockopt(m_socket, ZMQ_FD, &fd, &opt_len);
     assert(ret == 0);
 
+    // always check whether can read whenever read/write events fired
     m_read_notifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
+    m_write_notifier = new QSocketNotifier(fd, QSocketNotifier::Write, this);
     connect(m_read_notifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(read_notifier_activated()));
+    connect(m_write_notifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(read_notifier_activated()));
 }
 
 ZMQClient::~ZMQClient()
@@ -139,7 +142,9 @@ QList<QByteArray> ZMQClient::receive()
 void ZMQClient::read_notifier_activated()
 {
     m_read_notifier->setEnabled(false);
+    m_write_notifier->setEnabled(false);
     m_can_read = (get_events(m_socket) & ZMQ_POLLIN);
     if (m_can_read) emit ready_to_read();
     m_read_notifier->setEnabled(true);
+    m_write_notifier->setEnabled(true);
 }

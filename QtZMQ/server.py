@@ -3,7 +3,6 @@
 import zmq
 import sys
 import threading
-import sys
 
 
 def tprint(msg):
