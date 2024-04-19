@@ -66,7 +66,7 @@ void FrameWriter::frame_handle(QVideoFrame const& frame)
             //out << img;
             //int size = buffer.size();
 
-            //m_shared_memory.lock();
+            m_shared_memory.lock();
 
             //char* to = (char*)m_shared_memory.data();
             //const char* from = buffer.data().data();
