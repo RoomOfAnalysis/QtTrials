@@ -20,6 +20,7 @@ set(CMAKE_AUTORCC ON)
 add_executable(${PROJECT_NAME}
     main.cpp
     MainWindow.cpp MainWindow.h MainWindow.ui
+    waitingspinnerwidget.cpp waitingspinnerwidget.h
 )
 
 target_link_libraries(${PROJECT_NAME}
