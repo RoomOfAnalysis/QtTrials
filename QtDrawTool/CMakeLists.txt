@@ -18,8 +18,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 add_executable(${PROJECT_NAME}
-    #Board.cpp Board.h
-    Board2.cpp Board2.h
+    Board.cpp Board.h
+    #Board2.cpp Board2.h
     MainWindow.cpp MainWindow.h MainWindow.ui
     main.cpp
 )

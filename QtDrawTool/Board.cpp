@@ -32,15 +32,29 @@ void Board::openImg()
 
 void Board::undo()
 {
-    if (m_undos.size() <= 1) return;
+    if (m_undos.empty()) return;
+    if (m_redos.empty())
+    {
+        m_redos.push(std::move(m_undos.top()));
+        m_undos.pop();
+    }
+    qDebug() << m_undos.size() << m_redos.size();
+    if (m_undos.empty()) return;
+    m_img = m_undos.top();
     m_redos.push(std::move(m_undos.top()));
     m_undos.pop();
-    m_img = m_undos.top();
     update();
 }
 
 void Board::redo()
 {
+    if (m_redos.empty()) return;
+    if (m_undos.empty())
+    {
+        m_undos.push(std::move(m_redos.top()));
+        m_redos.pop();
+    }
+    qDebug() << m_undos.size() << m_redos.size();
     if (m_redos.empty()) return;
     m_img = m_redos.top();
     m_undos.push(std::move(m_redos.top()));
@@ -67,6 +81,17 @@ void Board::paint(QImage* img)
     {
     case Board::Shape::NONE:
         break;
+    case Board::Shape::PIN:
+        {
+            auto font = painter.font();
+            font.setPointSize(font.pointSize() * 5);
+            painter.setFont(font);
+            painter.setPen(QPen{Qt::blue, 5, Qt::SolidLine});
+            // FIXME: almost at cursor pos, maybe use icon image is better
+            painter.drawText(m_start_pt.x() - 15, m_start_pt.y() - 15, 30, 30, Qt::AlignHCenter | Qt::AlignVCenter,
+                             "X");
+            break;
+        }
     case Board::Shape::RECT:
         painter.drawRect(m_start_pt.x(), m_start_pt.y(), width, height);
         break;
@@ -87,6 +112,7 @@ void Board::paint(QImage* img)
         m_undos.push(m_img);
         while (!m_redos.empty())
             m_redos.pop();
+        qDebug() << m_undos.size();
     }
     update();
 }
@@ -104,6 +130,11 @@ void Board::mousePressEvent(QMouseEvent* event)
         m_start_pt = event->pos();
         m_drawing = true;
         m_mouse_pressing = true;
+        if (m_shape == Shape::PIN)
+        {
+            m_tmp_img = m_img;
+            paint(&m_tmp_img);
+        }
     }
 }
 

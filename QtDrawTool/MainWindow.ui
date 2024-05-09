@@ -106,7 +106,7 @@
   <customwidget>
    <class>Board</class>
    <extends>QWidget</extends>
-   <header>Board2.h</header>
+   <header>Board.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -24,7 +24,7 @@ void MainWindow::setupConnections()
 
     connect(ui->rect_btn, &QPushButton::clicked, [this]() { ui->board->shape() = Board::Shape::RECT; });
     connect(ui->circle_btn, &QPushButton::clicked, [this]() { ui->board->shape() = Board::Shape::CIRCLE; });
-    connect(ui->ellipse_btn, &QPushButton::clicked, [this]() { ui->board->shape() = Board::Shape::ELLIPSE; });
+    connect(ui->ellipse_btn, &QPushButton::clicked, [this]() { ui->board->shape() = Board::Shape::PIN; });
 
     connect(ui->undo_btn, &QPushButton::clicked, this, &MainWindow::on_undo);
     connect(ui->redo_btn, &QPushButton::clicked, this, &MainWindow::on_redo);

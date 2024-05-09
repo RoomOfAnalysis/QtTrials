@@ -12,6 +12,7 @@ public:
     enum class Shape
     {
         NONE,
+        PIN,
         RECT,
         CIRCLE,
         ELLIPSE,
