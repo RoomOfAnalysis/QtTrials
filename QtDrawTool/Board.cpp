@@ -33,7 +33,7 @@ void Board::openImg()
 void Board::undo()
 {
     if (m_undos.empty()) return;
-    if (m_redos.empty())
+    if (m_redos.empty() || m_last_call == 1) // last call is redo
     {
         m_redos.push(std::move(m_undos.top()));
         m_undos.pop();
@@ -44,12 +44,13 @@ void Board::undo()
     m_redos.push(std::move(m_undos.top()));
     m_undos.pop();
     update();
+    m_last_call = 0;
 }
 
 void Board::redo()
 {
     if (m_redos.empty()) return;
-    if (m_undos.empty())
+    if (m_undos.empty() || m_last_call == 0) // last call is undo
     {
         m_undos.push(std::move(m_redos.top()));
         m_redos.pop();
@@ -60,6 +61,7 @@ void Board::redo()
     m_undos.push(std::move(m_redos.top()));
     m_redos.pop();
     update();
+    m_last_call = 1;
 }
 
 void Board::reset()

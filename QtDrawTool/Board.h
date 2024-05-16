@@ -52,4 +52,5 @@ private:
     QPoint m_start_pt{}, m_end_pt{};
     bool m_drawing{false}, m_mouse_pressing{false};
     std::stack<QImage> m_undos{}, m_redos{};
+    int m_last_call = -1; // indicate last call undo or redo
 };
