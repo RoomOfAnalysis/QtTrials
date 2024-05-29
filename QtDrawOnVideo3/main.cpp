@@ -27,7 +27,11 @@ int main(int argc, char* argv[])
         {
             auto* view = board.getScene()->views()[0];
             view->fitInView(board.getPixmapItem());
-            view->centerOn(board.getPixmapItem());
+            //view->centerOn(board.getPixmapItem());
+            // centerOn may not correctly center the item
+            // according to https://forum.qt.io/topic/51541/centering-an-item-in-a-qgraphicsview/2
+            // setSceneRect will solve the problem
+            board.getScene()->setSceneRect(board.getPixmapItem()->sceneBoundingRect());
             first_img = false;
         }
     });
