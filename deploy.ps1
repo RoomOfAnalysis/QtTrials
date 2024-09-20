@@ -20,6 +20,20 @@ else
     & "$qt_bin_dir\windeployqt.debug.bat" "$target_dir\Debug\$project_name.exe"
 }
 
+# to support jpeg
+Copy-Item "$copy_from_bin\jpeg62.dll" -Destination $copy_to_bin
+
+# to support jp2
+Copy-Item "$copy_from_bin\jasper*.dll" -Destination $copy_to_bin
+Copy-Item "$copy_from_bin\openjp2.dll" -Destination $copy_to_bin
+
+# to support webp
+Copy-Item "$copy_from_bin\libsharpyuv.dll" -Destination $copy_to_bin
+Copy-Item "$copy_from_bin\libwebp.dll" -Destination $copy_to_bin
+Copy-Item "$copy_from_bin\libwebpdecoder.dll" -Destination $copy_to_bin
+Copy-Item "$copy_from_bin\libwebpdemux.dll" -Destination $copy_to_bin
+Copy-Item "$copy_from_bin\libwebpmux.dll" -Destination $copy_to_bin
+
 # if with ffmpeg
 Copy-Item "$copy_from_bin\avcodec-60.dll" -Destination $copy_to_bin
 Copy-Item "$copy_from_bin\avdevice-60.dll" -Destination $copy_to_bin
@@ -41,3 +55,4 @@ Copy-Item -Path "$qt_res_dir\*" -Destination "$copy_to_bin\resources" -Recurse
 
 # if has config.ini
 #Copy-Item "$target_dir\config.ini" -Destination $copy_to_bin
+
