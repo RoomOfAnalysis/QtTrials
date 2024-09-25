@@ -395,20 +395,17 @@ void ImageView::wheelEvent(QWheelEvent* event)
     {
         QPoint pixelDelta = event->pixelDelta();
         QPoint angleDelta = event->angleDelta();
+        // scroll by interval
+        QRect imgRect = scaledRect();
+        // shift by 2px in case of img edge misalignment
+        if ((event->angleDelta().y() < 0 && imgRect.bottom() > height() + 2) ||
+            (event->angleDelta().y() > 0 && imgRect.top() < -2))
         {
-            // scroll by interval
-            bool scrollable = false;
-            QRect imgRect = scaledRect();
-            // shift by 2px in case of img edge misalignment
-            if ((event->angleDelta().y() < 0 && imgRect.bottom() > height() + 2) ||
-                (event->angleDelta().y() > 0 && imgRect.top() < -2))
-            {
-                event->accept();
-                scroll(0, -angleDelta.y());
-            }
-            else
-                event->ignore();
+            event->accept();
+            scroll(0, -angleDelta.y());
         }
+        else
+            event->ignore();
         saveViewportPos();
     }
     else
