@@ -10,6 +10,10 @@ ImageViewer::ImageViewer(QWidget* parent): QMainWindow(parent), ui(new Ui::Image
 {
     ui->setupUi(this);
 
+    // FIXME: if directly use ImageView in .ui or set its parent with ui->widget, it will raise error
+    // so have to create it first...
+    m_image_view = new ImageView();
+    setCentralWidget(m_image_view);
     setup_connections();
 }
 
@@ -34,8 +38,9 @@ void ImageViewer::on_file_open()
         m_image.reset(new Image(filename));
         qDebug() << m_image->metadata()->fileInfo();
         qDebug() << m_image->metadata()->mimeType() << m_image->metadata()->orientation();
+        m_image->metadata()->loadExifTags();
         qDebug() << m_image->metadata()->getExifTags();
         qDebug() << m_image->pixmap().isNull();
-        ui->image_view->showPixmap(m_image->pixmap());
+        m_image_view->showPixmap(m_image->pixmap());
     }
 }

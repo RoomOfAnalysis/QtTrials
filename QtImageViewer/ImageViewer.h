@@ -3,6 +3,7 @@
 #include <QMainWindow>
 
 class Image;
+class ImageView;
 
 namespace Ui
 {
@@ -25,4 +26,5 @@ private:
 private:
     Ui::ImageViewer* ui;
     std::unique_ptr<Image> m_image = nullptr;
+    ImageView* m_image_view = nullptr;
 };
