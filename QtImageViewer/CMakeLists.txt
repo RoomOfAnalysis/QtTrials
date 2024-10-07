@@ -11,17 +11,6 @@ set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE INTERNAL "" FORCE)  # -Wno-dev
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(VTK 9.2 CONFIG REQUIRED)
-if(VTK_FOUND)
-    message(VTK_DIR "${VTK_DIR}")
-    if(NOT(TARGET VTK::GUISupportQt))
-        message(FATAL_ERROR "VTK not built with Qt support.")
-    endif()
-    if(NOT DEFINED VTK_QT_VERSION)
-        set(VTK_QT_VERSION 6)
-    endif()
-endif()
-
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Core Core5Compat Widgets Gui)
 
 # exiv2
@@ -47,7 +36,6 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     PRIVATE Qt${QT_VERSION_MAJOR}::Gui
     PRIVATE Exiv2::exiv2lib
-    PRIVATE ${VTK_LIBRARIES}
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -60,11 +48,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     # WIN32_EXECUTABLE TRUE
-)
-
-vtk_module_autoinit(
-    TARGETS ${PROJECT_NAME}
-    MODULES ${VTK_LIBRARIES}
 )
 
 install(TARGETS ${PROJECT_NAME}
