@@ -2,6 +2,7 @@
 #include "../QtImageViewer/Image.h"
 #include "QtImageViewer.h"
 #include "QtImageInfoOverlay.h"
+#include "QtImageHistOverlay.h"
 
 #include <QApplication>
 
@@ -21,8 +22,10 @@ int main(int argc, char* argv[])
     QtImageInfoOverlay overlay(&w);
     img.metadata()->loadExifTags();
     overlay.setExifInfo(img.metadata()->getExifTags());
+    QtImageHistOverlay hist(&w);
     w.show();
     w.showImage(img.pixmap());
+    hist.setImage(img.image());
 
     return a.exec();
 }
