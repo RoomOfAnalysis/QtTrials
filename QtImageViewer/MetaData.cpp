@@ -55,51 +55,53 @@ void MetaData::load_exif_image()
 
 void MetaData::load_orientation()
 {
-    /*
-    enum Transformation
-    {
-        TransformationNone = 0,
-        TransformationMirror = 1,
-        TransformationFlip = 2,
-        TransformationRotate180 = TransformationMirror | TransformationFlip,
-        TransformationRotate90 = 4,
-        TransformationMirrorAndRotate90 = TransformationMirror | TransformationRotate90,
-        TransformationFlipAndRotate90 = TransformationFlip | TransformationRotate90,
-        TransformationRotate270 = TransformationRotate180 | TransformationRotate90
-    };
-    */
-    m_orientation = -1;
-    if (auto reader = QImageReader(m_file_info.filePath()); reader.canRead())
-        m_orientation = static_cast<int>(reader.transformation());
-    else
-        qDebug() << reader.errorString();
-
     ///*
-    //* exif orientation is different from Qt's
-    //* https://exiftool.org/TagNames/EXIF.html
-    //* http://sylvana.net/jpegcrop/exif_orientation.html
-    //1 = Horizontal (normal)
-    //2 = Mirror horizontal
-    //3 = Rotate 180
-    //4 = Mirror vertical
-    //5 = Mirror horizontal and rotate 270 CW
-    //6 = Rotate 90 CW
-    //7 = Mirror horizontal and rotate 90 CW
-    //8 = Rotate 270 CW
+    //* // Qt Image Transformation
+    //enum Transformation
+    //{
+    //    TransformationNone = 0,
+    //    TransformationMirror = 1,
+    //    TransformationFlip = 2,
+    //    TransformationRotate180 = TransformationMirror | TransformationFlip,
+    //    TransformationRotate90 = 4,
+    //    TransformationMirrorAndRotate90 = TransformationMirror | TransformationRotate90,
+    //    TransformationFlipAndRotate90 = TransformationFlip | TransformationRotate90,
+    //    TransformationRotate270 = TransformationRotate180 | TransformationRotate90
+    //};
     //*/
-    //try
-    //{
-    //    if (auto const& exif_data = m_exif_img->exifData(); !exif_data.empty())
-    //        if (auto it = exif_data.findKey(Exiv2::ExifKey("Exif.Image.Orientation"));
-    //            it != exif_data.end() && it->count() != 0)
-    //        {
-    //            qInfo() << "[Exiv2] orientation:" << it->toInt64();
-    //        }
-    //}
-    //catch (Exiv2::Error const& e)
-    //{
-    //    qInfo() << "[Exiv2] failed to get orientation due to:" << e.what();
-    //}
+    //m_orientation = -1;
+    //if (auto reader = QImageReader(m_file_info.filePath()); reader.canRead())
+    //    m_orientation = static_cast<int>(reader.transformation());
+    //else
+    //    qDebug() << reader.errorString();
+
+    /*
+    * exif orientation is different from Qt's
+    * https://exiftool.org/TagNames/EXIF.html
+    * http://sylvana.net/jpegcrop/exif_orientation.html
+    1 = Horizontal (normal)
+    2 = Mirror horizontal
+    3 = Rotate 180
+    4 = Mirror vertical
+    5 = Mirror horizontal and rotate 270 CW
+    6 = Rotate 90 CW
+    7 = Mirror horizontal and rotate 90 CW
+    8 = Rotate 270 CW
+    */
+    try
+    {
+        if (auto const& exif_data = m_exif_img->exifData(); !exif_data.empty())
+            if (auto it = exif_data.findKey(Exiv2::ExifKey("Exif.Image.Orientation"));
+                it != exif_data.end() && it->count() != 0)
+            {
+                m_orientation = static_cast<int>(it->toInt64());
+                //qInfo() << "[Exiv2] orientation:" << it->toInt64();
+            }
+    }
+    catch (Exiv2::Error const& e)
+    {
+        qInfo() << "[Exiv2] failed to get orientation due to:" << e.what();
+    }
 }
 
 QFileInfo const& MetaData::fileInfo() const

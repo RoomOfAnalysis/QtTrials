@@ -19,22 +19,46 @@ QImage rotated(QImage in, qreal degree)
 
 QImage exifOriented(QImage in, int orientation)
 {
+    //// Qt Image Transformation
+    //switch (orientation)
+    //{
+    //case 1:
+    //    return flipH(in);
+    //case 2:
+    //    return flipV(in);
+    //case 3:
+    //    return flipV(flipH(in));
+    //case 4:
+    //    return rotated(in, 90);
+    //case 5:
+    //    return rotated(flipH(in), 90);
+    //case 6:
+    //    return rotated(flipV(in), 90);
+    //case 7:
+    //    return rotated(in, -90);
+    //default:
+    //    return in;
+    //}
+
+    // exif orientation
     switch (orientation)
     {
     case 1:
-        return flipH(in);
+        return in;
     case 2:
-        return flipV(in);
+        return flipH(in);
     case 3:
-        return flipV(flipH(in));
+        return rotated(in, 180);
     case 4:
-        return rotated(in, 90);
+        return flipV(in);
     case 5:
-        return rotated(flipH(in), 90);
+        return flipH(rotated(in, 90));
     case 6:
-        return rotated(flipV(in), 90);
+        return rotated(in, 90);
     case 7:
-        return rotated(in, -90);
+        return flipV(rotated(in, 90));
+    case 8:
+        return rotated(in, 270);
     default:
         return in;
     }

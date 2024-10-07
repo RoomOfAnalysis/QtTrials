@@ -185,6 +185,7 @@ void QtOverlayWidget::recalculateGeometry()
     case QtOverlayWidgetPosition::CENTER:
         pos.setX((containerSize().width() - rect.width()) / 2);
         pos.setY((containerSize().height() - rect.height()) / 2);
+        break;
     }
     rect.moveTopLeft(pos);
     setGeometry(rect);
