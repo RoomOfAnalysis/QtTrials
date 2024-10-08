@@ -3,6 +3,7 @@
 #include "QtImageViewer.h"
 #include "QtImageInfoOverlay.h"
 #include "QtImageHistOverlay.h"
+#include "QtCropRubberBandOverlay.h"
 
 #include <QApplication>
 
@@ -23,6 +24,7 @@ int main(int argc, char* argv[])
     img.metadata()->loadExifTags();
     overlay.setExifInfo(img.metadata()->getExifTags());
     QtImageHistOverlay hist(&w);
+    QtCropRubberBandOverlay crop(&w);
     w.show();
     w.showImage(img.pixmap());
     hist.setImage(img.image());

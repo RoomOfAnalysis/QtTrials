@@ -18,7 +18,7 @@ QtImageHistOverlay::QtImageHistOverlay(QtOverlayWidgetContainer* parent): QtOver
     chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     auto axisX = new QValueAxis;
     axisX->setRange(0, 255);
-    axisX->setLabelFormat("%u");
+    axisX->setLabelFormat("%d");
     axisX->setTitleText("Intensity");
     auto axisY = new QValueAxis;
     axisY->setLabelFormat("%f");
