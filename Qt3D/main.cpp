@@ -5,6 +5,7 @@
 #include <Qt3DRender/QMesh>
 
 #include "Qt3DWidget.h"
+#include "trackball_camera_controller.h"
 
 int main(int argc, char* argv[])
 {
@@ -16,6 +17,7 @@ int main(int argc, char* argv[])
 
     QApplication app(argc, argv);
     Qt3DWidget w;
+    w.setFixedSize(800, 800);
 
     QLabel fps(&w);
     fps.setStyleSheet("font-size:8pt;font-weight:bold;color:yellow;");
@@ -26,7 +28,7 @@ int main(int argc, char* argv[])
         timer.start();
     });
 
-    Qt3DCore::QComponent* mesh = nullptr;
+    Qt3DRender::QGeometryRenderer* mesh = nullptr;
     if (argc > 1)
     {
         auto* m = new Qt3DRender::QMesh();
@@ -35,13 +37,31 @@ int main(int argc, char* argv[])
     }
     else
     {
-        auto* m = new Qt3DExtras::QTorusMesh();
-        m->setRings(100);
-        m->setSlices(100);
-        m->setMinorRadius(0.5);
-        m->setRadius(1);
+        //auto* m = new Qt3DExtras::QTorusMesh();
+        //m->setRings(100);
+        //m->setSlices(100);
+        //m->setMinorRadius(0.5);
+        //m->setRadius(1);
+        auto m = new Qt3DExtras::QCuboidMesh();
+        m->setXExtent(10);
+        m->setYExtent(10);
+        m->setZExtent(10);
         mesh = m;
     }
+    if (auto p = qobject_cast<Qt3DRender::QMesh*>(mesh); p)
+        QObject::connect(p, &Qt3DRender::QMesh::statusChanged, [p, &w](Qt3DRender::QMesh::Status status) {
+            if (status == Qt3DRender::QMesh::Status::Ready)
+                QObject::connect(
+                    p->geometry(), &Qt3DCore::QGeometry::maxExtentChanged, [p, &w](const QVector3D& maxExtent) {
+                        // seems minExtent will be calculated before maxExtent, so here minExtent is ready
+                        auto minExtent = p->geometry()->minExtent();
+                        qDebug() << minExtent << maxExtent;
+                        auto center = (maxExtent - minExtent) / 2;
+                        w.camera()->setViewCenter(center);
+                        // FIXME: the camera interaction is not good if the camera position is too far or near to the mesh
+                        // maybe i should move the mesh instead of camera in TrackballCameraController instead?
+                    });
+        });
     Qt3DExtras::QPhongMaterial* material = new Qt3DExtras::QPhongMaterial();
     material->setAmbient("red");
 
@@ -50,8 +70,10 @@ int main(int argc, char* argv[])
     entity->addComponent(mesh);
     entity->addComponent(material);
     entity->addComponent(transform);
-    Qt3DExtras::QFirstPersonCameraController* cameraController =
-        new Qt3DExtras::QFirstPersonCameraController(entity); // new Qt3DExtras::QOrbitCameraController(entity);
+    auto* cameraController = new TrackballCameraController(
+        entity); //new Qt3DExtras::QFirstPersonCameraController(entity); // new Qt3DExtras::QOrbitCameraController(entity);
+    // need set window size here, beter way may be bind to resize event
+    cameraController->setWindowSize(w.size());
     cameraController->setCamera(w.camera());
 
     Qt3DExtras::QForwardRenderer* forwardRenderer = new Qt3DExtras::QForwardRenderer;
@@ -73,14 +95,13 @@ int main(int argc, char* argv[])
     lightTransform->setTranslation(w.camera()->position());
     lightEntity->addComponent(lightTransform);
 
-    QTimer animationTimer;
-    animationTimer.setInterval(10);
-    QObject::connect(&animationTimer, &QTimer::timeout,
-                     [transform]() { transform->setRotationX(transform->rotationX() + 1); });
-    animationTimer.start();
+    //QTimer animationTimer;
+    //animationTimer.setInterval(10);
+    //QObject::connect(&animationTimer, &QTimer::timeout,
+    //                 [transform]() { transform->setRotationX(transform->rotationX() + 1); });
+    //animationTimer.start();
 
     w.setRootEntity(entity);
-    w.camera()->setPosition(QVector3D(0, 0, 10));
 
     w.show();
 
