@@ -17,10 +17,15 @@ class PyWrapper
 public:
     PyWrapper();
     ~PyWrapper();
+
+    bool isInitialized() const;
+
+    QString getOuput();
+
     QString pyRun(QString);
+    QString pyObjectToString(PyObject*);
 
 private:
-    QString pyObjectToString(PyObject*);
     bool hasError();
 
 private:

@@ -22,7 +22,10 @@ QtPyConsole::QtPyConsole(QWidget* parent): QPlainTextEdit(parent)
     setFont(mPrefixFont);
     setPrefixFont(mPrefixFont);
 
-    setCursorWidth(QFontMetrics(font()).horizontalAdvance(QChar('x')));
+    auto charWidth = QFontMetrics(font()).horizontalAdvance(QChar('x'));
+
+    setCursorWidth(charWidth);
+    setTabStopDistance(charWidth * 4);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setUndoRedoEnabled(false);
@@ -30,12 +33,11 @@ QtPyConsole::QtPyConsole(QWidget* parent): QPlainTextEdit(parent)
     setWordWrapMode(QTextOption::NoWrap);
     setBackgroundVisible(false);
     setFrameStyle(QFrame::NoFrame);
-    setTabStopDistance(40);
     setAcceptDrops(false);
     setPrefix(">>> ");
     setPrefixColor(QColor(140, 255, 50));
 
-    prepareCommandLine();
+    //prepareCommandLine();
 }
 
 QtPyConsole::~QtPyConsole() = default;
@@ -96,14 +98,13 @@ void QtPyConsole::processCommand()
     if (inputString.startsWith(mPrefix)) inputString.remove(0, mPrefix.length());
     if (!inputString.trimmed().isEmpty()) mHistory.append(inputString);
     mHistoryPos = -1;
-    QString cmd = inputString.trimmed();
 
     QTextCursor cur(document()->lastBlock());
     cur.movePosition(QTextCursor::EndOfBlock);
     cur.insertBlock();
     setTextCursor(cur);
     mCommandLineReady = false;
-    emit command(cmd);
+    emit command(inputString);
 }
 
 void QtPyConsole::keyPressEvent(QKeyEvent* event)

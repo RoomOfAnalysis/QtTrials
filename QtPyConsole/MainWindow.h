@@ -3,7 +3,7 @@
 #include <QMainWindow>
 
 class QtPyConsole;
-class PyWrapper;
+class PyInteractiveWrapper;
 
 class MainWindow: public QMainWindow
 {
@@ -18,5 +18,5 @@ private slots:
 
 private:
     QtPyConsole* textEdit = nullptr;
-    PyWrapper* console = nullptr;
+    PyInteractiveWrapper* interactiveConsole = nullptr;
 };
