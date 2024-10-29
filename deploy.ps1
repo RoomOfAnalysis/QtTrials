@@ -1,11 +1,11 @@
 $mode = $args[0]
 $project_name = $args[1]
 $target_dir = "$(Get-Location)\build\$project_name"
-$qt_bin_dir = "C:\vcpkg\installed\x64-windows\tools\Qt6\bin"
-$qt_trans_dir = "C:\vcpkg\installed\x64-windows\translations"
-$qt_res_dir = "C:\vcpkg\installed\x64-windows\resources"
-$release_bin_dir = "C:\vcpkg\installed\x64-windows\bin"
-$debug_bin_dir = "C:\vcpkg\installed\x64-windows\debug\bin"
+$qt_bin_dir = "D:\vcpkg\installed\x64-windows\tools\Qt6\bin"
+$qt_trans_dir = "D:\vcpkg\installed\x64-windows\translations"
+$qt_res_dir = "D:\vcpkg\installed\x64-windows\resources"
+$release_bin_dir = "D:\vcpkg\installed\x64-windows\bin"
+$debug_bin_dir = "D:\vcpkg\installed\x64-windows\debug\bin"
 $copy_from_bin = $debug_bin_dir
 $copy_to_bin = "$target_dir\Debug"
 

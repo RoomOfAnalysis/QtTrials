@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 
-if(WIN32)
-    set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE INTERNAL "" FORCE)
-endif()
-
 project(QtWidgetRecorder VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE INTERNAL "" FORCE)  # -Wno-dev

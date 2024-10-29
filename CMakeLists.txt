@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
 if(WIN32)
-    set(CMAKE_TOOLCHAIN_FILE "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE INTERNAL "" FORCE)
+    # upgrade to win11 and setup [dev drive](https://learn.microsoft.com/en-gb/windows/dev-drive/) to drive D
+    set(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE INTERNAL "" FORCE)
 endif()
 
 project(QtTrials VERSION 0.1 LANGUAGES CXX)
