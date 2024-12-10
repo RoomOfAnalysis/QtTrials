@@ -363,7 +363,7 @@ public:
         pushButtonReset->setText(QApplication::translate("SARibbonCustomizeWidget", "reset", Q_NULLPTR)); // cn:重置
         labelProportion->setText(
             QApplication::translate("SARibbonCustomizeWidget", "proportion:", Q_NULLPTR)); // cn:比例
-    }                                                                                      // retranslateUi
+    } // retranslateUi
 };
 
 /**
