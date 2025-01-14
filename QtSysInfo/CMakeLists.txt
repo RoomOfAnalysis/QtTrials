@@ -13,20 +13,25 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-file(GLOB_RECURSE PROJECT_SOURCES LIST_DIRECTORIES false CONFIGURE_DEPENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.ui
+add_executable(${PROJECT_NAME}
+    ${CMAKE_CURRENT_SOURCE_DIR}/dataqueryengine.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/dataqueryengine.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
-add_executable(${PROJECT_NAME}
-    ${PROJECT_SOURCES}
+add_executable(${PROJECT_NAME}_info
+    ${CMAKE_CURRENT_SOURCE_DIR}/info.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::Core
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     PRIVATE Qt${QT_VERSION_MAJOR}::Charts
+)
+
+target_link_libraries(${PROJECT_NAME}_info
+    PRIVATE Qt${QT_VERSION_MAJOR}::Core
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
