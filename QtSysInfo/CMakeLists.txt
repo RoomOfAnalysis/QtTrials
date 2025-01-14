@@ -23,6 +23,10 @@ add_executable(${PROJECT_NAME}_info
     ${CMAKE_CURRENT_SOURCE_DIR}/info.cpp
 )
 
+add_executable(${PROJECT_NAME}_info_pdh
+    ${CMAKE_CURRENT_SOURCE_DIR}/info_pdh.cpp
+)
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::Core
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
@@ -30,6 +34,11 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}_info
+    PRIVATE Qt${QT_VERSION_MAJOR}::Core
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+)
+
+target_link_libraries(${PROJECT_NAME}_info_pdh
     PRIVATE Qt${QT_VERSION_MAJOR}::Core
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
 )
