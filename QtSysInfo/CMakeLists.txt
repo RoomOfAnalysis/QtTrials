@@ -27,6 +27,10 @@ add_executable(${PROJECT_NAME}_info_pdh
     ${CMAKE_CURRENT_SOURCE_DIR}/info_pdh.cpp
 )
 
+add_executable(${PROJECT_NAME}_info_nvapi
+    ${CMAKE_CURRENT_SOURCE_DIR}/info_nvapi.cpp
+)
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::Core
     PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
