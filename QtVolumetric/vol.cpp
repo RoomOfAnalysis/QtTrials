@@ -11,6 +11,14 @@ Vol::Vol(Q3DScatterWidgetItem* scatter): m_graph(scatter)
     // Only allow zooming at the center and limit the zoom to 200% to avoid clipping issues
     m_graph->setZoomAtTargetEnabled(false);
     m_graph->setMaxCameraZoomLevel(200.0f);
+    m_graph->setMeasureFps(true);
+
+    m_graph->axisX()->setRange(0.0f, 1000.0f);
+    m_graph->axisY()->setRange(-600.0f, 600.0f);
+    m_graph->axisZ()->setRange(0.0f, 1000.0f);
+    m_graph->axisX()->setSegmentCount(5);
+    m_graph->axisY()->setSegmentCount(6);
+    m_graph->axisZ()->setSegmentCount(5);
 
     m_volumeItem = new QCustom3DVolume(this);
 
@@ -32,10 +40,6 @@ void Vol::setSliceLabels(QLabel* xLabel, QLabel* yLabel, QLabel* zLabel)
     m_sliceLabelX = xLabel;
     m_sliceLabelY = yLabel;
     m_sliceLabelZ = zLabel;
-
-    sliceX(m_sliceSliderX->value());
-    sliceY(m_sliceSliderY->value());
-    sliceZ(m_sliceSliderZ->value());
 }
 
 void Vol::sliceX(int value)
@@ -94,10 +98,21 @@ void Vol::loadVolumeData(QList<QImage*> const& volumeData)
     // https://doc.qt.io/qt-6/qcustom3dvolume.html#createTextureData
     if (m_volumeItem->createTextureData(volumeData))
     {
+        qDebug() << m_volumeItem->textureWidth() << m_volumeItem->textureHeight() << m_volumeItem->textureDepth();
         m_sliceSliderX->setMaximum(m_volumeItem->textureWidth());
         m_sliceSliderY->setMaximum(m_volumeItem->textureHeight());
         m_sliceSliderZ->setMaximum(m_volumeItem->textureDepth());
+
+        m_volumeItem->setDrawSlices(false);
+        m_volumeItem->setSliceIndexX(m_sliceIndexX);
+        m_volumeItem->setSliceIndexY(m_sliceIndexY);
+        m_volumeItem->setSliceIndexZ(m_sliceIndexZ);
+
+        // FIXME: Failed to create 3D texture: COM error 0x80070057: The parameter is incorrect.
+        m_graph->addCustomItem(m_volumeItem);
     }
+    else
+        qCritical() << "failed to load volume data";
 }
 
 void Vol::loadColorTable(QList<QRgb> const& colorTable)

@@ -14,12 +14,18 @@ MainWindow::MainWindow(QWidget* parent): QWidget(parent), ui(new Ui::MainWindow)
     ui->setupUi(this);
 
     m_graph = new Q3DScatterWidgetItem();
-    m_quickWidget = new QQuickWidget(ui->display);
+    m_quickWidget = new QQuickWidget();
     m_graph->setWidget(m_quickWidget);
     m_graph->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_graph->widget()->setFocusPolicy(Qt::StrongFocus);
 
     m_vol = new Vol(m_graph);
+    m_vol->setFpsLabel(ui->fpsLabel);
+    m_vol->setSliceSliders(ui->sliceXSlider, ui->sliceYSlider, ui->sliceZSlider);
+    m_vol->setSliceLabels(ui->sliceImageXLabel, ui->sliceImageYLabel, ui->sliceImageZLabel);
+
+    new QGridLayout(ui->display);
+    ui->display->layout()->addWidget(m_quickWidget);
 
     setup_connections();
 }
