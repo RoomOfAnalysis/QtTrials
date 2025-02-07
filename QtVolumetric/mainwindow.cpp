@@ -58,8 +58,16 @@ void MainWindow::setup_connections()
             QList<QImage*> images;
             images.reserve(paths.size());
             for (qsizetype i = 0; i < paths.size(); i++)
-                images.push_back(new QImage(paths[i]));
+            {
+                auto* img = new QImage(paths[i]);
+                *img = img->scaled(1024, 1024, Qt::KeepAspectRatio);
+                images.push_back(img);
+            }
             return images;
         }));
     });
+
+    connect(ui->sliceXSlider, &QSlider::valueChanged, m_vol, &Vol::sliceX);
+    connect(ui->sliceYSlider, &QSlider::valueChanged, m_vol, &Vol::sliceY);
+    connect(ui->sliceZSlider, &QSlider::valueChanged, m_vol, &Vol::sliceZ);
 }
