@@ -58,11 +58,13 @@ void Vol::sliceX(int value)
 {
     if (m_volumeItem)
     {
-        m_sliceIndexX = value / (1024 / m_volumeItem->textureWidth());
-        if (m_sliceIndexX == m_volumeItem->textureWidth()) m_sliceIndexX--;
-        if (m_volumeItem->sliceIndexX() != -1) m_volumeItem->setSliceIndexX(m_sliceIndexX);
-        m_sliceLabelX->setPixmap(QPixmap::fromImage(m_volumeItem->renderSlice(Qt::XAxis, m_sliceIndexX))
-                                     .scaled(256, 256, Qt::KeepAspectRatio));
+        m_sliceIndexX = value;
+        if (m_volumeItem->sliceIndexX() != -1)
+        {
+            m_volumeItem->setSliceIndexX(m_sliceIndexX);
+            m_sliceLabelX->setPixmap(QPixmap::fromImage(m_volumeItem->renderSlice(Qt::XAxis, m_sliceIndexX))
+                                         .scaled(256, 256, Qt::KeepAspectRatio));
+        }
     }
 }
 
@@ -70,11 +72,13 @@ void Vol::sliceY(int value)
 {
     if (m_volumeItem)
     {
-        m_sliceIndexY = value / (1024 / m_volumeItem->textureHeight());
-        if (m_sliceIndexY == m_volumeItem->textureHeight()) m_sliceIndexY--;
-        if (m_volumeItem->sliceIndexY() != -1) m_volumeItem->setSliceIndexY(m_sliceIndexY);
-        m_sliceLabelY->setPixmap(QPixmap::fromImage(m_volumeItem->renderSlice(Qt::YAxis, m_sliceIndexY))
-                                     .scaled(256, 256, Qt::KeepAspectRatio));
+        m_sliceIndexY = value;
+        if (m_volumeItem->sliceIndexY() != -1)
+        {
+            m_volumeItem->setSliceIndexY(m_sliceIndexY);
+            m_sliceLabelY->setPixmap(QPixmap::fromImage(m_volumeItem->renderSlice(Qt::YAxis, m_sliceIndexY))
+                                         .scaled(256, 256, Qt::KeepAspectRatio));
+        }
     }
 }
 
@@ -82,11 +86,13 @@ void Vol::sliceZ(int value)
 {
     if (m_volumeItem)
     {
-        m_sliceIndexZ = value / (1024 / m_volumeItem->textureDepth());
-        if (m_sliceIndexZ == m_volumeItem->textureDepth()) m_sliceIndexZ--;
-        if (m_volumeItem->sliceIndexZ() != -1) m_volumeItem->setSliceIndexZ(m_sliceIndexZ);
-        m_sliceLabelZ->setPixmap(QPixmap::fromImage(m_volumeItem->renderSlice(Qt::ZAxis, m_sliceIndexZ))
-                                     .scaled(256, 256, Qt::KeepAspectRatio));
+        m_sliceIndexZ = value;
+        if (m_volumeItem->sliceIndexZ() != -1)
+        {
+            m_volumeItem->setSliceIndexZ(m_sliceIndexZ);
+            m_sliceLabelZ->setPixmap(QPixmap::fromImage(m_volumeItem->renderSlice(Qt::ZAxis, m_sliceIndexZ))
+                                         .scaled(256, 256, Qt::KeepAspectRatio));
+        }
     }
 }
 
@@ -115,9 +121,9 @@ void Vol::loadVolumeData(QList<QImage*> const& volumeData)
     {
         qDebug() << m_volumeItem->textureWidth() << m_volumeItem->textureHeight() << m_volumeItem->textureDepth()
                  << m_volumeItem->textureFormat();
-        m_sliceSliderX->setMaximum(1024);
-        m_sliceSliderY->setMaximum(1024);
-        m_sliceSliderZ->setMaximum(1024);
+        m_sliceSliderX->setMaximum(m_volumeItem->textureWidth() - 1);
+        m_sliceSliderY->setMaximum(m_volumeItem->textureHeight() - 1);
+        m_sliceSliderZ->setMaximum(m_volumeItem->textureDepth() - 1);
 
         m_volumeItem->setPosition(QVector3D(0, 0, 0));
 
