@@ -99,16 +99,24 @@ void TrackballCameraController::moveCamera(const Qt3DExtras::QAbstractCameraCont
     else if (state.middleMouseButtonActive)
     {
         auto offset = m_mouseLastPosition - m_mouseCurrentPosition;
+        auto dist = (theCamera->position() - theCamera->viewCenter()).length();
         theCamera->translate(
-            QVector3D(offset.x() / float(m_windowSize.width()) * ls, offset.y() / float(m_windowSize.height()) * ls, 0),
+            QVector3D(offset.x() / float(m_windowSize.width()), offset.y() / float(m_windowSize.height()), 0) * dist,
             Qt3DRender::QCamera::TranslateViewCenter);
     }
     else if (state.rightMouseButtonActive)
     {
-        if ((theCamera->position() - theCamera->viewCenter()).lengthSquared() > m_zoomInLimit * m_zoomInLimit)
-            theCamera->translate(QVector3D(0, 0, state.ryAxisValue), theCamera->DontTranslateViewCenter);
-        else
-            theCamera->translate(QVector3D(0, 0, -0.5), theCamera->DontTranslateViewCenter);
+        // if ((theCamera->position() - theCamera->viewCenter()).lengthSquared() > m_zoomInLimit * m_zoomInLimit)
+        //     theCamera->translate(QVector3D(0, 0, state.ryAxisValue), theCamera->DontTranslateViewCenter);
+        // else
+        //     theCamera->translate(QVector3D(0, 0, -0.5), theCamera->DontTranslateViewCenter);
+        auto offset = m_mouseLastPosition - m_mouseCurrentPosition;
+        auto dist = (theCamera->position() - theCamera->viewCenter()).length();
+        auto move = -offset.y() / float(m_windowSize.height()) * dist;
+        // use fov instead of moving camera due to camera motion may make the object out of far plane...
+        // theCamera->translate(QVector3D(0, 0, move), theCamera->DontTranslateViewCenter);
+        if (!qFuzzyCompare(move, 0))
+            theCamera->setFieldOfView(std::clamp(theCamera->fieldOfView() * (move < 0 ? 1.05f : 0.95f), 1.f, 180.f));
     }
     else
         theCamera->translate(QVector3D(state.txAxisValue * ls, state.tyAxisValue * ls, state.tzAxisValue * ls) * dt,

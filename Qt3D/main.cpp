@@ -55,11 +55,19 @@ int main(int argc, char* argv[])
                     p->geometry(), &Qt3DCore::QGeometry::maxExtentChanged, [p, &w](const QVector3D& maxExtent) {
                         // seems minExtent will be calculated before maxExtent, so here minExtent is ready
                         auto minExtent = p->geometry()->minExtent();
-                        qDebug() << minExtent << maxExtent;
+                        auto camera = w.camera();
+                        //qDebug() << minExtent << maxExtent << camera->nearPlane() << camera->farPlane();
                         auto center = (maxExtent - minExtent) / 2;
-                        w.camera()->setViewCenter(center);
-                        // FIXME: the camera interaction is not good if the camera position is too far or near to the mesh
-                        // maybe i should move the mesh instead of camera in TrackballCameraController instead?
+                        auto mesh_dia = (maxExtent - minExtent).length();
+                        // make sure the whole mesh are inside the camera view
+                        camera->setPosition(center + 1.1f * QVector3D(0, 0, 1).normalized() * mesh_dia /
+                                                         (2 * qTan(camera->fieldOfView() / 2)));
+                        camera->setViewCenter(center);
+                        if (auto len = (camera->position() - camera->viewCenter()).length(); len > camera->farPlane())
+                        {
+                            camera->setFarPlane(len * 1.5);
+                            //qDebug() << camera->farPlane();
+                        }
                     });
         });
     Qt3DExtras::QPhongMaterial* material = new Qt3DExtras::QPhongMaterial();

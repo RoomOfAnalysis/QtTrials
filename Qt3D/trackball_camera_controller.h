@@ -7,6 +7,7 @@
 // code from https://github.com/cjmdaixi/Qt3DTrackball
 // https://github.com/rayform/QTrackballCameraController
 // https://github.com/qt/qt3d/blob/dev/src/extras/defaults/qorbitcameracontroller.cpp
+// https://github.com/unclejimbo/Klein/blob/master/src/Input/TrackballCameraController.cpp
 class TrackballCameraController: public Qt3DExtras::QAbstractCameraController
 {
     Q_OBJECT
