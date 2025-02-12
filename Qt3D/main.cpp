@@ -3,9 +3,87 @@
 #include <Qt3DExtras>
 #include <QLabel>
 #include <Qt3DRender/QMesh>
+#include <Qt3DRender/QPaintedTextureImage>
 
 #include "Qt3DWidget.h"
 #include "trackball_camera_controller.h"
+
+class DynamicImageTexture: public Qt3DRender::QPaintedTextureImage
+{
+public:
+    DynamicImageTexture(Qt3DCore::QNode* parent = nullptr): QPaintedTextureImage(parent) {}
+    ~DynamicImageTexture() = default;
+
+    void setImage(QImage img)
+    {
+        m_img = img;
+        setSize(img.size());
+    }
+
+    void paint(QPainter* painter) override
+    {
+        // https://doc.qt.io/qt-6/qt3drender-qpaintedtextureimage.html#paint
+        // painter->setViewport(0, height(), width(), -height()); // here, no need to mirror
+        painter->drawImage(0, 0, m_img);
+    }
+
+private:
+    QImage m_img;
+};
+
+void addTextureCoordinatesToMesh(Qt3DRender::QMesh* mesh)
+{
+    auto geo = mesh->geometry();
+    for (auto attr : geo->attributes())
+        if (attr->name() == Qt3DCore::QAttribute::defaultTextureCoordinateAttributeName()) return;
+
+    Qt3DCore::QAttribute* vertice_attr = nullptr;
+    for (auto attr : geo->attributes())
+        if (attr->name() == Qt3DCore::QAttribute::defaultPositionAttributeName())
+        {
+            vertice_attr = attr;
+            break;
+        }
+    if (!vertice_attr) return;
+
+    //qDebug() << vertice_attr->count();
+
+    auto min_extent = geo->minExtent();
+    auto bound = geo->maxExtent() - min_extent;
+
+    QList<QVector2D> texCoords;
+    texCoords.reserve(vertice_attr->count());
+    QByteArray const& data = vertice_attr->buffer()->data();
+    for (uint i = 0; i < vertice_attr->count(); i++)
+    {
+        auto j = vertice_attr->byteOffset() + i * vertice_attr->byteStride();
+        const char* rawData = &(data.constData()[j]);
+        const float* value = reinterpret_cast<const float*>(rawData);
+        // simple use uv = (x / bound_x, y / bound_y)
+        // TODO: implement algo like [vtk](https://github.com/Kitware/VTK/blob/master/Filters/Texture/vtkTextureMapToPlane.cxx)
+        texCoords.append(QVector2D(std::clamp((value[0] - min_extent[0]) / bound[0], 0.f, 1.f),
+                                   std::clamp((value[1] - min_extent[1]) / bound[0], 0.f, 1.f)));
+    }
+
+    //qDebug() << texCoords;
+
+    auto* texCoordBuffer = new Qt3DCore::QBuffer(mesh);
+    QByteArray texCoordData;
+    texCoordData.resize(texCoords.size() * sizeof(QVector2D));
+    memcpy(texCoordData.data(), texCoords.constData(), texCoordData.size());
+    texCoordBuffer->setData(texCoordData);
+
+    auto* texCoordAttribute = new Qt3DCore::QAttribute();
+    texCoordAttribute->setName(Qt3DCore::QAttribute::defaultTextureCoordinateAttributeName());
+    texCoordAttribute->setVertexBaseType(Qt3DCore::QAttribute::Float);
+    texCoordAttribute->setVertexSize(2);
+    texCoordAttribute->setAttributeType(Qt3DCore::QAttribute::VertexAttribute);
+    texCoordAttribute->setBuffer(texCoordBuffer);
+    texCoordAttribute->setByteStride(2 * sizeof(float));
+    texCoordAttribute->setCount(texCoords.size());
+
+    geo->addAttribute(texCoordAttribute);
+}
 
 int main(int argc, char* argv[])
 {
@@ -53,6 +131,11 @@ int main(int argc, char* argv[])
             if (status == Qt3DRender::QMesh::Status::Ready)
                 QObject::connect(
                     p->geometry(), &Qt3DCore::QGeometry::maxExtentChanged, [p, &w](const QVector3D& maxExtent) {
+                        addTextureCoordinatesToMesh(p);
+                        // for (auto attr : p->geometry()->attributes())
+                        //     if (attr->name() == Qt3DCore::QAttribute::defaultTextureCoordinateAttributeName())
+                        //         qDebug() << attr->count();
+
                         // seems minExtent will be calculated before maxExtent, so here minExtent is ready
                         auto minExtent = p->geometry()->minExtent();
                         auto camera = w.camera();
@@ -70,8 +153,25 @@ int main(int argc, char* argv[])
                         }
                     });
         });
-    Qt3DExtras::QPhongMaterial* material = new Qt3DExtras::QPhongMaterial();
-    material->setAmbient("red");
+
+    Qt3DRender::QMaterial* material = nullptr;
+    if (argc > 2)
+    {
+        Qt3DExtras::QTextureMaterial* _material = new Qt3DExtras::QTextureMaterial;
+        Qt3DRender::QTexture2D* texture = new Qt3DRender::QTexture2D(_material);
+        DynamicImageTexture* t_image = new DynamicImageTexture(_material);
+        t_image->setImage(QImage(argv[2]));
+        texture->addTextureImage(t_image);
+        _material->setTexture(texture);
+        material = _material;
+        qDebug() << "use texture image";
+    }
+    else
+    {
+        Qt3DExtras::QPhongMaterial* _material = new Qt3DExtras::QPhongMaterial();
+        _material->setAmbient("red");
+        material = _material;
+    }
 
     Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
     Qt3DCore::QEntity* entity = new Qt3DCore::QEntity();
@@ -86,7 +186,7 @@ int main(int argc, char* argv[])
 
     Qt3DExtras::QForwardRenderer* forwardRenderer = new Qt3DExtras::QForwardRenderer;
     forwardRenderer->setCamera(w.camera());
-    forwardRenderer->setClearColor(Qt::gray);
+    forwardRenderer->setClearColor(Qt::black);
     w.setActiveFrameGraph(forwardRenderer);
 
     w.camera()->lens()->setPerspectiveProjection(45.0f, 1200.0f / 800.0f, 0.1f, 1000.0f);
