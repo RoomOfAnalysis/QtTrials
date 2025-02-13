@@ -62,7 +62,7 @@ void addTextureCoordinatesToMesh(Qt3DRender::QMesh* mesh)
         // simple use uv = (x / bound_x, y / bound_y)
         // TODO: implement algo like [vtk](https://github.com/Kitware/VTK/blob/master/Filters/Texture/vtkTextureMapToPlane.cxx)
         texCoords.append(QVector2D(std::clamp((value[0] - min_extent[0]) / bound[0], 0.f, 1.f),
-                                   std::clamp((value[1] - min_extent[1]) / bound[0], 0.f, 1.f)));
+                                   std::clamp((value[1] - min_extent[1]) / bound[1], 0.f, 1.f)));
     }
 
     //qDebug() << texCoords;
