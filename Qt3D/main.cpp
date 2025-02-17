@@ -7,6 +7,7 @@
 
 #include "Qt3DWidget.h"
 #include "trackball_camera_controller.h"
+#include "Qt3DAxis.h"
 
 class DynamicImageTexture: public Qt3DRender::QPaintedTextureImage
 {
@@ -208,6 +209,20 @@ int main(int argc, char* argv[])
     //QObject::connect(&animationTimer, &QTimer::timeout,
     //                 [transform]() { transform->setRotationX(transform->rotationX() + 1); });
     //animationTimer.start();
+
+    if (auto p = qobject_cast<Qt3DRender::QMesh*>(mesh); p)
+        QObject::connect(
+            p, &Qt3DRender::QMesh::statusChanged, [p, entity, cameraController](Qt3DRender::QMesh::Status status) {
+                if (status == Qt3DRender::QMesh::Status::Ready)
+                    QObject::connect(p->geometry(), &Qt3DCore::QGeometry::maxExtentChanged,
+                                     [p, entity, cameraController](const QVector3D& maxExtent) {
+                                         auto dimensions = p->geometry()->maxExtent() - p->geometry()->minExtent();
+                                         auto axis = new Qt3DAxis(entity, cameraController);
+                                         axis->setAxisLengths(dimensions.x(), dimensions.y(), dimensions.z());
+                                         axis->setAxisRadius(10);
+                                         axis->init();
+                                     });
+            });
 
     w.setRootEntity(entity);
 
