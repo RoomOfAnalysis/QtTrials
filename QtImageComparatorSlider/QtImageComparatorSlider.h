@@ -2,6 +2,8 @@
 
 #include <QSplitter>
 
+class QLabel;
+
 class QtImageComparatorSlider: public QSplitter
 {
     Q_OBJECT
@@ -9,8 +11,10 @@ public:
     explicit QtImageComparatorSlider(QWidget* parent = nullptr);
     ~QtImageComparatorSlider();
 
-    void setLeftPixmap(QPixmap p);
-    void setRightPixmap(QPixmap p);
+    // left or top
+    void setPixmap1(QPixmap p);
+    // right or bottom
+    void setPixmap2(QPixmap p);
 
 protected:
     QSize sizeHint() const override;
@@ -18,10 +22,11 @@ protected:
     void paintEvent(QPaintEvent* ev) override;
 
 private:
-    class QtImageLabel;
+    void recalculateGeometry();
 
-    QPixmap left_pix, right_pix;
+private:
+    QPixmap pix1, pix2;
     QSize curr_sz;
-    QtImageLabel* left_label = nullptr;
-    QtImageLabel* right_label = nullptr;
+    QLabel* label1 = nullptr;
+    QLabel* label2 = nullptr;
 };

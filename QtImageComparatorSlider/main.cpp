@@ -18,8 +18,9 @@ int main(int argc, char* argv[])
 
     auto w = new QtImageComparatorSlider;
     w->setStyleSheet("QSplitter{background-color:black;}; QSplitter::handle{background-color: rgb(255, 255, 255);}");
-    w->setLeftPixmap(*img1);
-    w->setRightPixmap(*img2);
+    w->setPixmap1(*img1);
+    w->setPixmap2(*img2);
+    //w->setOrientation(Qt::Orientation::Vertical);
     mw->setCentralWidget(w);
     mw->show();
 

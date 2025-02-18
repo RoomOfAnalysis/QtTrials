@@ -4,45 +4,15 @@
 #include <QPixmap>
 #include <QPaintEvent>
 
-class QtImageComparatorSlider::QtImageLabel: public QLabel
-{
-public:
-    explicit QtImageLabel(QWidget* parent = nullptr): QLabel(parent)
-    {
-        setMinimumSize(1, 1);
-        setScaledContents(false);
-    }
-    ~QtImageLabel() = default;
-
-    void setPixmap(QPixmap const& p)
-    {
-        m_pix = p;
-        QLabel::setPixmap(p);
-    }
-
-    void setLeft(bool is_left) { m_is_left = is_left; }
-
-protected:
-    void resizeEvent(QResizeEvent* ev) override
-    {
-        if (m_is_left)
-            QLabel::setPixmap(m_pix.copy(0, 0, ev->size().width(), ev->size().height()));
-        else
-            QLabel::setPixmap(
-                m_pix.copy(m_pix.width() - ev->size().width(), 0, ev->size().width(), ev->size().height()));
-    }
-
-private:
-    QPixmap m_pix;
-    bool m_is_left = true;
-};
-
 QtImageComparatorSlider::QtImageComparatorSlider(QWidget* parent)
-    : QSplitter(parent), left_label(new QtImageLabel(this)), right_label(new QtImageLabel(this))
+    : QSplitter(parent), label1(new QLabel(this)), label2(new QLabel(this))
 {
-    right_label->setLeft(false);
-    addWidget(left_label);
-    addWidget(right_label);
+    label1->setMinimumSize(1, 1);
+    label1->setScaledContents(false);
+    label2->setMinimumSize(1, 1);
+    label2->setScaledContents(false);
+    addWidget(label1);
+    addWidget(label2);
     setOrientation(Qt::Orientation::Horizontal);
     setOpaqueResize(true);
 
@@ -51,28 +21,77 @@ QtImageComparatorSlider::QtImageComparatorSlider(QWidget* parent)
 
 QtImageComparatorSlider::~QtImageComparatorSlider() = default;
 
-void QtImageComparatorSlider::setLeftPixmap(QPixmap p)
+void QtImageComparatorSlider::setPixmap1(QPixmap p)
 {
-    left_pix = p;
+    pix1 = p;
+    recalculateGeometry();
 }
 
-void QtImageComparatorSlider::setRightPixmap(QPixmap p)
+void QtImageComparatorSlider::setPixmap2(QPixmap p)
 {
-    right_pix = p.isNull() ? left_pix : p;
+    pix2 = p;
 }
 
 QSize QtImageComparatorSlider::sizeHint() const
 {
-    return left_pix.size();
+    return pix1.size();
 }
 
 void QtImageComparatorSlider::resizeEvent(QResizeEvent* ev)
 {
-    auto [pw, ph] = left_pix.size();
+    QSplitter::resizeEvent(ev);
+    recalculateGeometry();
+}
+
+void QtImageComparatorSlider::paintEvent(QPaintEvent* ev)
+{
+    if (pix1.isNull())
+    {
+        QSplitter::paintEvent(ev);
+        return;
+    }
+
+    auto lp = pix1.scaled(curr_sz, Qt::KeepAspectRatio);
+    auto rp = pix2.scaled(curr_sz, Qt::KeepAspectRatio);
+
+    auto szs = sizes();
+    auto lw = szs[0];
+    auto rw = szs[1];
+
+    if (orientation() == Qt::Orientation::Horizontal)
+    {
+        label1->setPixmap(lp.copy(QRect(0, 0, lw, curr_sz.height())));
+        if (!pix2.isNull())
+        {
+            auto rp = pix2.scaled(curr_sz, Qt::KeepAspectRatio);
+            label2->setPixmap(rp.copy(QRect(rp.width() - rw, 0, rw, curr_sz.height())));
+        }
+    }
+    else
+    {
+        label1->setPixmap(lp.copy(QRect(0, 0, curr_sz.width(), lw)));
+        if (!pix2.isNull())
+        {
+            auto rp = pix2.scaled(curr_sz, Qt::KeepAspectRatio);
+            label2->setPixmap(rp.copy(QRect(0, curr_sz.height() - rw, curr_sz.width(), rw)));
+        }
+    }
+
+    QSplitter::paintEvent(ev);
+}
+
+void QtImageComparatorSlider::recalculateGeometry()
+{
+    if (pix1.isNull())
+    {
+        curr_sz = size();
+        return;
+    }
+
+    auto const& [pw, ph] = pix1.size();
     auto r = float(pw) / ph;
 
-    QWidget::resizeEvent(ev);
-    auto [width, height] = ev->size();
+    auto const& [width, height] = size();
     auto width_n = qMin(width, int(height * r));
     auto height_n = qMin(height, int(width / r));
 
@@ -81,25 +100,4 @@ void QtImageComparatorSlider::resizeEvent(QResizeEvent* ev)
     auto hm = round(width - width_n) / 2;
     auto vm = round(height - height_n) / 2;
     setContentsMargins(hm, vm, hm, vm);
-}
-
-void QtImageComparatorSlider::paintEvent(QPaintEvent* ev)
-{
-    if (left_pix.isNull())
-    {
-        QSplitter::paintEvent(ev);
-        return;
-    }
-
-    auto lp = left_pix.scaled(curr_sz, Qt::KeepAspectRatio);
-    auto rp = right_pix.scaled(curr_sz, Qt::KeepAspectRatio);
-
-    auto szs = sizes();
-    auto lw = szs[0];
-    auto rw = szs[1];
-
-    left_label->setPixmap(lp.copy(QRect(0, 0, lw, curr_sz.height())));
-    right_label->setPixmap(rp.copy(QRect(rp.width() - rw, 0, rw, curr_sz.height())));
-
-    QSplitter::paintEvent(ev);
 }
