@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>./shaders/mesh.vs</file>
+        <file>./shaders/mesh.fs</file>
+        <file>./shaders/mesh_n.vs</file>
+        <file>./shaders/mesh_n.fs</file>
+        <file>./shaders/mesh_nc.vs</file>
+        <file>./shaders/mesh_nc.fs</file>
+    </qresource>
+</RCC>
