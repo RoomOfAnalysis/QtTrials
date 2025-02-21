@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.6)
+
+project(QtUtils VERSION 0.1 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(Qt6 REQUIRED COMPONENTS Core Core5Compat Widgets)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+file(GLOB_RECURSE PROJECT_SOURCES LIST_DIRECTORIES false CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.qrc
+)
+
+add_library(${PROJECT_NAME}
+    STATIC ${PROJECT_SOURCES}
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE Qt${QT_VERSION_MAJOR}::Core
+    PRIVATE Qt${QT_VERSION_MAJOR}::Core5Compat
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+)
+
+add_executable(${PROJECT_NAME}_test main.cpp)
+
+target_link_libraries(${PROJECT_NAME}_test
+    PRIVATE Qt${QT_VERSION_MAJOR}::Core
+    PRIVATE Qt${QT_VERSION_MAJOR}::Core5Compat
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+    PRIVATE ${PROJECT_NAME}
+)
