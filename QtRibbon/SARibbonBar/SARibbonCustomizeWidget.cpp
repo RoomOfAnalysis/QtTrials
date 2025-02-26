@@ -345,7 +345,7 @@ public:
         lineEditSearchAction->setInputMask(QString());
         lineEditSearchAction->setText(QString());
         lineEditSearchAction->setPlaceholderText(
-            QApplication::translate("SARibbonCustomizeWidget", "Find Command", Q_NULLPTR)); // cn:查找命令
+            QApplication::translate("SARibbonCustomizeWidget", "Find Command", Q_NULLPTR));              // cn:查找命令
         pushButtonAdd->setText(QApplication::translate("SARibbonCustomizeWidget", "Add >>", Q_NULLPTR)); // cn:添加 >>
         pushButtonDelete->setText(
             QApplication::translate("SARibbonCustomizeWidget", "<< Remove", Q_NULLPTR)); // cn:<< 移除
@@ -358,9 +358,9 @@ public:
         pushButtonNewCategory->setText(
             QApplication::translate("SARibbonCustomizeWidget", "New Category", Q_NULLPTR)); // cn:新建选项卡
         pushButtonNewPannel->setText(
-            QApplication::translate("SARibbonCustomizeWidget", "New Group", Q_NULLPTR)); // cn:新建组
+            QApplication::translate("SARibbonCustomizeWidget", "New Group", Q_NULLPTR));                    // cn:新建组
         pushButtonRename->setText(QApplication::translate("SARibbonCustomizeWidget", "Rename", Q_NULLPTR)); // cn:重命名
-        pushButtonReset->setText(QApplication::translate("SARibbonCustomizeWidget", "reset", Q_NULLPTR)); // cn:重置
+        pushButtonReset->setText(QApplication::translate("SARibbonCustomizeWidget", "reset", Q_NULLPTR));   // cn:重置
         labelProportion->setText(
             QApplication::translate("SARibbonCustomizeWidget", "proportion:", Q_NULLPTR)); // cn:比例
     } // retranslateUi

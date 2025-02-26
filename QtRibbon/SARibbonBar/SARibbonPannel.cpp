@@ -62,7 +62,7 @@ public:
 public:
     bool m_isCanCustomize{true}; ///< 记录是否可自定义
     SARibbonPannel::PannelLayoutMode m_pannelLayoutMode{
-        SARibbonPannel::ThreeRowMode}; ///< pannel的布局模式，默认为3行模式ThreeRowMode
+        SARibbonPannel::ThreeRowMode};                         ///< pannel的布局模式，默认为3行模式ThreeRowMode
     SARibbonPannelOptionButton* m_optionActionButton{nullptr}; ///< 标题栏的y距离
     SARibbonPannelLabel* m_label{nullptr};
 };

@@ -52,7 +52,7 @@ public:
     enum PannelLayoutMode
     {
         ThreeRowMode, ///< 三行布局模式，office就是三行布局模式，pannel能布置3行小toolbutton，默认模式
-        TwoRowMode ///< 两行布局模式，wps的后续布局模式就是两行布局模式，pannel能布置2行小toolbutton
+        TwoRowMode    ///< 两行布局模式，wps的后续布局模式就是两行布局模式，pannel能布置2行小toolbutton
     };
     Q_ENUM(PannelLayoutMode)
 public:

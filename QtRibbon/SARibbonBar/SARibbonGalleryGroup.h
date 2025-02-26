@@ -66,7 +66,7 @@ public:
      */
     enum GalleryGroupStyle
     {
-        IconWithText,         ///< 图标带文字
+        IconWithText, ///< 图标带文字
         IconWithWordWrapText, ///< 图标带文字,文字会换行显示，此模式只会对DisplayOneRow生效，如果不是DisplayOneRow，等同IconWithText
         IconOnly              ///< 只有图标
     };

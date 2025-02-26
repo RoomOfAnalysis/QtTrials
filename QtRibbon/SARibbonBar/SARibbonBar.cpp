@@ -69,12 +69,12 @@ public:
     QSize mWindowButtonSize;                 ///< 由SARibbonMainWindow告诉的windowbutton的尺寸
     QList<QColor> mContextCategoryColorList; ///< contextCategory的色系
     int mContextCategoryColorListIndex{-1};  ///< 记录contextCategory色系索引
-    QColor mTitleTextColor; ///< 标题文字颜色,默认无效，无效的情况下和SARibbonBar的qss:color属性一致
-    QColor mTabBarBaseLineColor{QColor(186, 201, 219)}; ///< tabbar 底部会绘制一条线条，定义线条颜色
-    QColor mContextCategoryTitleTextColor{Qt::black};   ///< 记录Context category的标题字体颜色
-    Qt::Alignment mTitleAligment{Qt::AlignCenter};      ///< 标题对齐方式
-    bool mIsTitleVisible{true};                         ///< 标题是否显示
-    SARibbonAlignment mRibbonAlignment{SARibbonAlignment::AlignLeft};                        ///< 对齐方式
+    QColor mTitleTextColor;                  ///< 标题文字颜色,默认无效，无效的情况下和SARibbonBar的qss:color属性一致
+    QColor mTabBarBaseLineColor{QColor(186, 201, 219)};               ///< tabbar 底部会绘制一条线条，定义线条颜色
+    QColor mContextCategoryTitleTextColor{Qt::black};                 ///< 记录Context category的标题字体颜色
+    Qt::Alignment mTitleAligment{Qt::AlignCenter};                    ///< 标题对齐方式
+    bool mIsTitleVisible{true};                                       ///< 标题是否显示
+    SARibbonAlignment mRibbonAlignment{SARibbonAlignment::AlignLeft}; ///< 对齐方式
     SARibbonPannel::PannelLayoutMode mDefaulePannelLayoutMode{SARibbonPannel::ThreeRowMode}; ///< 默认的PannelLayoutMode
     bool mEnableShowPannelTitle{true};   ///< 是否运行pannel的标题栏显示
     bool mIsTabOnTitle{false};           ///< 是否tab在标题栏上
