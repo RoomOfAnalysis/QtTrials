@@ -38,6 +38,7 @@ struct QtMesh
     QVector<Index> m_indices;
     QVector<SubMeshData> m_submeshes;
     QVector<QSharedPointer<Material>> m_materials;
+    float m_extents[6]{};
 
     static QSharedPointer<QtMesh> Load(QString const& path);
 };

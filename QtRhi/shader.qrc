@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>shader/frag.qsb</file>
         <file>shader/vert.qsb</file>
+        <file>shader/vert1.qsb</file>
     </qresource>
 </RCC>

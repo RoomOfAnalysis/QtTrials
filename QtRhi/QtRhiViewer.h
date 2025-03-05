@@ -17,13 +17,16 @@ public:
     ~QtRhiViewer();
 
     void loadMesh(QString path);
+    void loadTexture(QString path);
+    void textureMapToPlane(bool flag);
 
 protected:
     void initialize(QRhiCommandBuffer* cb) override;
     void render(QRhiCommandBuffer* cb) override;
+    void mousePressEvent(QMouseEvent* event) override;
 
 private:
-    void rebuildScene();
+    void buildScene();
 
 private:
     QRhi* m_rhi = nullptr;
@@ -40,4 +43,8 @@ private:
         QMatrix4x4 mvp;
     } m_scene;
     QSharedPointer<QtMesh> m_mesh;
+    QImage m_tex;
+    bool m_tp = false;
+    std::unique_ptr<QRhiBuffer> m_bound;
+    bool m_rot = true;
 };

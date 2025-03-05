@@ -83,11 +83,14 @@ QSharedPointer<QtMesh> QtMesh::Load(QString const& path)
     Assimp::Importer importer;
     aiScene const* scene =
         importer.ReadFile(path.toUtf8().constData(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals |
-                                                         aiProcess_CalcTangentSpace);
+                                                         aiProcess_CalcTangentSpace | aiProcess_GenBoundingBoxes);
     if (!scene) return qmesh;
 
     qmesh = QSharedPointer<QtMesh>::create();
     qmesh->m_materials = LoadMaterialsFromScene(scene, path);
+    float x_min = std::numeric_limits<float>::max(), x_max = std::numeric_limits<float>::min(),
+          y_min = std::numeric_limits<float>::max(), y_max = std::numeric_limits<float>::min(),
+          z_min = std::numeric_limits<float>::max(), z_max = std::numeric_limits<float>::min();
     QQueue<QPair<aiNode*, aiMatrix4x4>> qnode;
     qnode.push_back({scene->mRootNode, aiMatrix4x4()});
     while (!qnode.isEmpty())
@@ -96,6 +99,12 @@ QSharedPointer<QtMesh> QtMesh::Load(QString const& path)
         for (unsigned int i = 0; i < node.first->mNumMeshes; i++)
         {
             aiMesh* mesh = scene->mMeshes[node.first->mMeshes[i]];
+            x_min = std::min(x_min, mesh->mAABB.mMin.x);
+            y_min = std::min(y_min, mesh->mAABB.mMin.y);
+            z_min = std::min(z_min, mesh->mAABB.mMin.z);
+            x_max = std::max(x_max, mesh->mAABB.mMax.x);
+            y_max = std::max(y_max, mesh->mAABB.mMax.y);
+            z_max = std::max(z_max, mesh->mAABB.mMax.z);
             SubMeshData qsub_mesh;
             qsub_mesh.vertices_offset = qmesh->m_vertices.size();
             qsub_mesh.vertices_num = mesh->mNumVertices;
@@ -131,6 +140,13 @@ QSharedPointer<QtMesh> QtMesh::Load(QString const& path)
         for (unsigned int i = 0; i < node.first->mNumChildren; i++)
             qnode.push_back({node.first->mChildren[i], node.second * node.first->mChildren[i]->mTransformation});
     }
+    qmesh->m_extents[0] = x_min;
+    qmesh->m_extents[1] = y_min;
+    qmesh->m_extents[2] = z_min;
+    qmesh->m_extents[3] = x_max;
+    qmesh->m_extents[4] = y_max;
+    qmesh->m_extents[5] = z_max;
+    //qDebug() << x_min << y_min << z_min << x_max << y_max << z_max;
 
     return qmesh;
 }
