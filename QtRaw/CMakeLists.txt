@@ -32,7 +32,7 @@ add_library(${PROJECT_NAME}
     #RawPlugin.cpp raw.json
 )
 
-add_executable(${PROJECT_NAME}_test main.cpp)
+add_executable(${PROJECT_NAME}_test main.cpp RawReader.cpp RawReader.hpp)
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC Qt${QT_VERSION_MAJOR}::Core
