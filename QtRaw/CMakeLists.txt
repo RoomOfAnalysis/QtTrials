@@ -16,8 +16,7 @@ find_package(TIFF REQUIRED)
 find_package(LibLZMA REQUIRED)
 
 # raw
-# libraw::raw_r is thread safe version compared with libraw::raw
-find_library(LIBRAW_LIBRARY NAMES raw raw_r)
+find_package(libraw CONFIG REQUIRED)
 
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Core Widgets Gui)
 
@@ -42,7 +41,7 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC Qt${QT_VERSION_MAJOR}::Gui
     PUBLIC TIFF::TIFF
     PUBLIC LibLZMA::LibLZMA
-    PUBLIC ${LIBRAW_LIBRARY}
+    PUBLIC libraw::raw_r # libraw::raw_r is thread safe version compared with libraw::raw
     PUBLIC ${PNG_LIBRARIES}
     PUBLIC ${JPEG_LIBRARIES}
 )
