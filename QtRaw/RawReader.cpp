@@ -7,6 +7,9 @@
 #include <libraw/libraw.h>
 #include <libraw/libraw_datastream.h>
 
+// 50 ms (kimage) vs 20 ms
+//#define USE_KIMAGE_IMPL
+
 class RawDataStream: public LibRaw_abstract_datastream
 {
 public:
@@ -168,6 +171,13 @@ QImage RawReader::read(QSize sz, int quality)
     const QSize thumbnailSize = d->thumbnailSize;
     const libraw_data_t& imgdata = d->raw->imgdata;
 
+    // auto&& tlist = imgdata.thumbs_list;
+    // qDebug() << tlist.thumbcount;
+    // auto idx = 0;
+    // for (auto n = 1; n < std::min(tlist.thumbcount, LIBRAW_THUMBNAIL_MAXCOUNT); ++n)
+    //     if (tlist.thumblist[n].twidth > tlist.thumblist[idx].twidth) idx = n;
+    // qDebug() << thumbnailSize << tlist.thumblist[idx].twidth << tlist.thumblist[idx].theight;
+
     const bool useThumbnail =
         ( // Less than 1% difference
             d->quality <= JPEG_DEFAULT_QUALITY && finalSize.width() / 100 == thumbnailSize.width() / 100 &&
@@ -202,6 +212,7 @@ QImage RawReader::read(QSize sz, int quality)
     }
 
     QImage unscaled;
+#ifndef USE_KIMAGE_IMPL
     std::unique_ptr<uchar[]> pixels = nullptr;
     if (output->type == LIBRAW_IMAGE_JPEG)
     {
@@ -268,6 +279,23 @@ QImage RawReader::read(QSize sz, int quality)
 
     d->raw->dcraw_clear_mem(output);
     return res;
+#else
+    auto ba = QByteArray(reinterpret_cast<const char*>(output->data), qsizetype(output->data_size)); // deep-copy
+    d->raw->dcraw_clear_mem(output);
+    if (output->type == LIBRAW_IMAGE_BITMAP)
+    {
+        // clang-format off
+        auto header = QString::fromUtf8("P%1\n%2 %3\n%4\n") // taken from KDcraw
+                          .arg(output->colors == 3 ? QLatin1String("6") : QLatin1String("5"))
+                          .arg(output->width)
+                          .arg(output->height)
+                          .arg((1 << output->bits)-1);
+        // clang-format on
+        ba.prepend(header.toLatin1());
+    }
+    unscaled.loadFromData(ba);
+    return unscaled;
+#endif
 }
 
 QSize RawReader::thumbnailSize() const

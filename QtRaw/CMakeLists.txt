@@ -16,6 +16,7 @@ find_package(TIFF REQUIRED)
 find_package(LibLZMA REQUIRED)
 
 # raw
+# libraw::raw_r is thread safe version compared with libraw::raw
 find_library(LIBRAW_LIBRARY NAMES raw raw_r)
 
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Core Widgets Gui)
@@ -31,6 +32,7 @@ add_library(${PROJECT_NAME}
     RawIOHandler.cpp RawIOHandler.hpp
     #RawPlugin.cpp raw.json
 )
+target_compile_definitions(${PROJECT_NAME} PUBLIC -DNOMINMAX)
 
 add_executable(${PROJECT_NAME}_test main.cpp RawReader.cpp RawReader.hpp)
 
