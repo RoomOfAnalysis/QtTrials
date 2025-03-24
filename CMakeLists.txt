@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 if(WIN32)
     # upgrade to win11 and setup [dev drive](https://learn.microsoft.com/en-gb/windows/dev-drive/) to drive D
