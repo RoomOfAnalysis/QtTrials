@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Viewer</class>
+ <widget class="QWidget" name="Viewer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>846</width>
+    <height>697</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" columnstretch="7,3">
+   <item row="0" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="5">
+     <item>
+      <widget class="CMPViewer" name="cmpViewer" native="true"/>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="1">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="imgNumLabel">
+       <property name="text">
+        <string>Source Images</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="thumbnailsListWidget"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="renderBtn">
+       <property name="text">
+        <string>Render</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CMPViewer</class>
+   <extends>QWidget</extends>
+   <header location="global">cmpviewer.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
