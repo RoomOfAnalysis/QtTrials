@@ -8,6 +8,10 @@
 #include <QDir>
 #include <QCollator>
 #include <QCloseEvent>
+#include <QtConcurrent>
+#include <QElapsedTimer>
+
+//#define SEQ
 
 Viewer::Viewer(QWidget* parent): QWidget(parent), ui(new Ui::Viewer)
 {
@@ -56,11 +60,22 @@ void Viewer::setImages(QList<QImage> const& images, QStringList const& paths)
 
 QList<QImage> Viewer::loadImages(QStringList const& paths)
 {
+    QElapsedTimer timer;
+    timer.start();
+
+#ifdef SEQ
     QList<QImage> images;
     images.reserve(paths.size());
-    // TODO: load thumbail in QThreadPool + QRunnable
     for (qsizetype i = 0; i < paths.size(); i++)
         images.push_back(QImage(paths[i]).scaled(100, 100, Qt::KeepAspectRatio, Qt::FastTransformation));
+#else
+    auto images = QtConcurrent::blockingMappedReduced<QList<QImage>>(
+        QThreadPool::globalInstance(), paths.cbegin(), paths.cend(),
+        [](QString const& p) { return QImage(p).scaled(100, 100, Qt::KeepAspectRatio, Qt::FastTransformation); },
+        [](QList<QImage>& imgs, QImage img) { imgs.append(img); });
+#endif
+    qDebug() << timer.elapsed() << "ms";
+
     return images;
 }
 
