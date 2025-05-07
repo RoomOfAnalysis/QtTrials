@@ -5,10 +5,18 @@
 #include <QTranslator>
 #include <QMap>
 
+#include <DockManager.h>
+
 namespace Ui
 {
     class MainWindow;
 }
+
+class QListWidget;
+class QMdiArea;
+class QPlainTextEdit;
+class HistViewer;
+class FileInfoViewer;
 
 class MainWindow final: public QMainWindow
 {
@@ -42,6 +50,7 @@ public slots:
 protected:
     /// @brief handle language change
     void changeEvent(QEvent*) override;
+    void closeEvent(QCloseEvent*) override;
 
 private:
     void setup_connections();
@@ -55,6 +64,14 @@ private:
 
 private:
     Ui::MainWindow* ui = nullptr;
+    ads::CDockManager* m_dock_manager = nullptr;
+    QListWidget* imageList = nullptr;
+    QMdiArea* mdiArea = nullptr;
+    QPlainTextEdit* output_log = nullptr;
+    QWidget* rightPanel = nullptr;
+    HistViewer* hist = nullptr;
+    FileInfoViewer* info = nullptr;
+
     QMap<QString, QPixmap> m_images{};
 
     QString m_curr_lang{};

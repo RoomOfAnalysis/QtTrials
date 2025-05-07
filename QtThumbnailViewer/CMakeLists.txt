@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Charts Xml Concurrent)
+find_package(qtadvanceddocking-qt6 CONFIG REQUIRED)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -35,4 +36,5 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::Charts
     PRIVATE Qt${QT_VERSION_MAJOR}::Xml
     PRIVATE Qt${QT_VERSION_MAJOR}::Concurrent
+    PRIVATE ads::qtadvanceddocking-qt6
 )
