@@ -10,10 +10,71 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QMessageBox>
+#include <QListWidget>
+#include <QMdiArea>
+#include <QPlainTextEdit>
+#include <QVBoxLayout>
+
+#include <DockAreaWidget.h>
 
 #include "image2dviewer.hpp"
 #include "viewer.hpp"
 #include "cmpviewer.hpp"
+#include "histviewer.hpp"
+#include "fileinfoviewer.hpp"
+
+// https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System/issues/388
+constexpr auto M_ADS_STYLE_COMMON = "\
+#tabsMenuButton { \
+        qproperty-icon: url(:/ads/images/tabs-menu-button.svg); \
+        qproperty-iconSize: 16px; \
+} \
+#detachGroupButton { \
+    qproperty-icon: url(:/ads/images/detach-button.svg), url(:/ads/images/detach-button-disabled.svg) disabled; \
+    qproperty-iconSize : 16px; \
+} \
+ads--CTitleBarButton::menu-indicator{ \
+    image:none; \
+} \
+#dockAreaAutoHideButton{ \
+    qproperty-icon: url(:/ads/images/vs-pin-button.svg), url(:/ads/images/vs-pin-button-disabled.svg) disabled; \
+    qproperty-iconSize: 16px; \
+} \
+ads--CAutoHideDockContainer #dockAreaAutoHideButton { \
+	qproperty-icon: url(:/ads/images/vs-pin-button-pinned.svg); \
+	qproperty-iconSize: 16px; \
+} \
+ads--CAutoHideDockContainer #dockAreaMinimizeButton { \
+    qproperty-icon: url(:/ads/images/minimize-button.svg); \
+    qproperty-iconSize: 16px; \
+} \
+ads--CDockWidgetTab QLabel { \
+    background-color: transparent; \
+    min-width: 60px; \
+    min-height: 25px; \
+    text-align: center; \
+} \
+";
+
+constexpr auto M_ADS_STYLE_DARK = "\
+ads--CDockWidgetTab[activeTab=\"true\"] { \
+    background-color: #455364; \
+    margin: 0;\
+} \
+ads--CDockWidgetTab:hover { \
+    background-color: #1A72BB; \
+} \
+";
+
+constexpr auto M_ADS_STYLE_LIGHT = "\
+ads--CDockWidgetTab[activeTab=\"true\"] { \
+    background-color: #C0C4C8; \
+    margin: 0;\
+} \
+ads--CDockWidgetTab:hover { \
+    background-color: #73C7FF; \
+} \
+";
 
 QString EncodePath(QString const& origin_path)
 {
@@ -39,7 +100,81 @@ concept ImageRenderable = requires(T t) {
 MainWindow::MainWindow(QWidget* parent): QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->imageList->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHasCloseButton, false);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::ActiveTabHasCloseButton, false);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHasUndockButton, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::DoubleClickUndocksWidget, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::OpaqueSplitterResize, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::XmlCompressionEnabled, false);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting, true);
+    ads::CDockManager::setConfigFlag(ads::CDockManager::EqualSplitOnInsertion, false);
+    ads::CDockManager::setAutoHideConfigFlags(ads::CDockManager::DefaultAutoHideConfig);
+    ads::CDockManager::setAutoHideConfigFlag(ads::CDockManager::AutoHideOpenOnDragHover, true);
+    ads::CDockManager::setConfigParam(ads::CDockManager::AutoHideOpenOnDragHoverDelay_ms, 500);
+    m_dock_manager = new ads::CDockManager(this);
+    m_dock_manager->setStyleSheet(M_ADS_STYLE_COMMON);
+
+    QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
+    sizePolicy.setHorizontalStretch(0);
+    sizePolicy.setVerticalStretch(0);
+
+    mdiArea = new QMdiArea;
+    mdiArea->setObjectName("mdiArea");
+    sizePolicy.setHeightForWidth(mdiArea->sizePolicy().hasHeightForWidth());
+    mdiArea->setSizePolicy(sizePolicy);
+    mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
+    mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
+    auto* dw_mdiArea = m_dock_manager->createDockWidget(tr("mdiArea"));
+    dw_mdiArea->setWidget(mdiArea);
+    auto* centralDockArea = m_dock_manager->setCentralWidget(dw_mdiArea);
+    centralDockArea->setAllowedAreas(ads::DockWidgetArea::OuterDockAreas);
+
+    imageList = new QListWidget;
+    imageList->setObjectName("imageList");
+    imageList->setIconSize(QSize(200, 150));
+    imageList->setMovement(QListView::Movement::Static);
+    imageList->setFlow(QListView::Flow::TopToBottom);
+    imageList->setProperty("isWrapping", QVariant(true));
+    imageList->setResizeMode(QListView::ResizeMode::Adjust);
+    imageList->setViewMode(QListView::ViewMode::IconMode);
+    imageList->setItemAlignment(Qt::AlignmentFlag::AlignCenter);
+    imageList->setContextMenuPolicy(Qt::CustomContextMenu);
+    auto* dw_imageList = m_dock_manager->createDockWidget(tr("ImageList"));
+    dw_imageList->setWidget(imageList);
+    m_dock_manager->addDockWidget(ads::LeftDockWidgetArea, dw_imageList, centralDockArea);
+    ui->menuDock->addAction(dw_imageList->toggleViewAction());
+
+    rightPanel = new QWidget;
+    rightPanel->setObjectName("rightPanel");
+    sizePolicy.setHeightForWidth(rightPanel->sizePolicy().hasHeightForWidth());
+    rightPanel->setSizePolicy(sizePolicy);
+    auto* dw_rightPanel = m_dock_manager->createDockWidget(tr("HistInfo"));
+    dw_rightPanel->setWidget(rightPanel);
+    m_dock_manager->addDockWidget(ads::RightDockWidgetArea, dw_rightPanel, centralDockArea);
+    ui->menuDock->addAction(dw_rightPanel->toggleViewAction());
+
+    hist = new HistViewer(rightPanel);
+    hist->setObjectName("hist");
+
+    info = new FileInfoViewer(rightPanel);
+    info->setObjectName("info");
+
+    auto* verticalLayout = new QVBoxLayout;
+    verticalLayout->setContentsMargins({0, 0, 0, 0});
+    verticalLayout->addWidget(hist);
+    verticalLayout->addWidget(info);
+    verticalLayout->setStretchFactor(hist, 1);
+    verticalLayout->setStretchFactor(info, 1);
+    rightPanel->setLayout(verticalLayout);
+
+    output_log = new QPlainTextEdit;
+    output_log->setObjectName("output_log");
+    output_log->setReadOnly(true);
+    auto* dw_output_log = m_dock_manager->createDockWidget(tr("OutputLog"));
+    dw_output_log->setWidget(output_log);
+    m_dock_manager->addDockWidget(ads::BottomDockWidgetArea, dw_output_log, centralDockArea);
+    ui->menuDock->addAction(dw_output_log->toggleViewAction());
 
     setup_connections();
     SetDarkTheme();
@@ -102,7 +237,7 @@ void MainWindow::setup_connections()
 
                     auto* viewer = new Viewer();
                     viewer->setImages(imgs, paths);
-                    auto* sub_window = ui->mdiArea->addSubWindow(viewer);
+                    auto* sub_window = mdiArea->addSubWindow(viewer);
                     sub_window->setWindowTitle(dir_path);
                     sub_window->setAttribute(Qt::WA_DeleteOnClose);
                     sub_window->setContentsMargins({0, 0, 0, 0});
@@ -114,18 +249,18 @@ void MainWindow::setup_connections()
             watcher->setFuture(QtConcurrent::run([this, paths]() { return Viewer::loadImages(paths); }));
         };
 
-    connect(ui->imageList, &QListWidget::customContextMenuRequested, [this](QPoint const& pos) {
-        QPoint global_pos = ui->imageList->mapToGlobal(pos);
+    connect(imageList, &QListWidget::customContextMenuRequested, [this](QPoint const& pos) {
+        QPoint global_pos = imageList->mapToGlobal(pos);
         auto* remove_action = new QAction(QIcon(":/ImageTool/UI_Icons/delete.png"), tr("remove"));
         QMenu menu;
         menu.addAction(remove_action);
         QAction* action = menu.exec(global_pos);
         if (action == remove_action)
         {
-            auto* item = ui->imageList->takeItem(ui->imageList->indexAt(pos).row());
+            auto* item = imageList->takeItem(imageList->indexAt(pos).row());
             auto k = item->data(Qt::UserRole).toString();
             auto title = DecodePath(k);
-            for (auto* w : ui->mdiArea->subWindowList())
+            for (auto* w : mdiArea->subWindowList())
                 if (w->windowTitle() == title)
                 {
                     w->close();
@@ -166,19 +301,19 @@ void MainWindow::setup_connections()
         LoadImages.template operator()<Viewer>(formats.join(";;"));
     });
 
-    connect(ui->imageList, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
+    connect(imageList, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
         auto k = item->data(Qt::UserRole).toString();
         auto title = DecodePath(k);
-        for (auto* w : ui->mdiArea->subWindowList())
+        for (auto* w : mdiArea->subWindowList())
             if (w->windowTitle() == title)
             {
-                ui->mdiArea->setActiveSubWindow(w);
+                mdiArea->setActiveSubWindow(w);
                 if (w->isHidden()) w->showMaximized();
                 return;
             }
         auto* viewer = new Viewer();
         viewer->loadImage(QImage(title));
-        auto* sub_window = ui->mdiArea->addSubWindow(viewer);
+        auto* sub_window = mdiArea->addSubWindow(viewer);
         sub_window->setWindowTitle(title);
         sub_window->setAttribute(Qt::WA_DeleteOnClose);
         sub_window->setContentsMargins({0, 0, 0, 0});
@@ -186,7 +321,7 @@ void MainWindow::setup_connections()
         sub_window->show();
     });
 
-    connect(ui->mdiArea, &QMdiArea::subWindowActivated, [this](QMdiSubWindow* w) {
+    connect(mdiArea, &QMdiArea::subWindowActivated, [this](QMdiSubWindow* w) {
         if (w == nullptr)
         {
             SetHist(QImage());
@@ -197,14 +332,14 @@ void MainWindow::setup_connections()
         auto path = w->windowTitle();
         SetPathInfo(path);
 
-        const QSignalBlocker _(ui->imageList);
-        if (auto items = ui->imageList->findItems(ui->info->getFileName(), Qt::MatchExactly); items.size() == 1)
-            ui->imageList->setCurrentItem(items.first());
+        const QSignalBlocker _(imageList);
+        if (auto items = imageList->findItems(info->getFileName(), Qt::MatchExactly); items.size() == 1)
+            imageList->setCurrentItem(items.first());
         else
         {
             for (auto* item : items)
                 if (auto title = DecodePath(item->data(Qt::UserRole).toString()); title == path)
-                    ui->imageList->setCurrentItem(item);
+                    imageList->setCurrentItem(item);
         }
 
         SetHist(static_cast<Viewer*>(w->widget())->getImage());
@@ -251,11 +386,11 @@ void MainWindow::createAndAppendItemToImageList(QString const& caseCachedDirName
 {
     assert(!img.isNull());
 
-    m_images[caseCachedDirName] = img.scaledToWidth(ui->imageList->width());
+    m_images[caseCachedDirName] = img.scaledToWidth(imageList->width());
     auto* item = new QListWidgetItem(QIcon(m_images[caseCachedDirName]), title);
     item->setData(Qt::UserRole, caseCachedDirName);
     item->setTextAlignment(Qt::AlignHCenter | Qt::AlignBottom);
-    ui->imageList->insertItem(ui->imageList->count(), item);
+    imageList->insertItem(imageList->count(), item);
 }
 
 void MainWindow::updateImageListItem(QString const& oldK, QString const& newK, QPixmap img, QString const& title)
@@ -265,11 +400,11 @@ void MainWindow::updateImageListItem(QString const& oldK, QString const& newK, Q
     m_images.remove(oldK);
     if (!m_images.contains(newK))
     {
-        m_images[newK] = img.scaledToWidth(ui->imageList->width());
-        for (auto i = 0; i < ui->imageList->count(); i++)
-            if (ui->imageList->item(i)->data(Qt::UserRole).toString() == oldK)
+        m_images[newK] = img.scaledToWidth(imageList->width());
+        for (auto i = 0; i < imageList->count(); i++)
+            if (imageList->item(i)->data(Qt::UserRole).toString() == oldK)
             {
-                auto* item = ui->imageList->item(i);
+                auto* item = imageList->item(i);
                 item->setIcon(QIcon(m_images[newK]));
                 item->setText(title);
                 item->setData(Qt::UserRole, newK);
@@ -284,11 +419,11 @@ void MainWindow::updateImageListItem(QString const& k, QPixmap img)
 
     if (m_images.contains(k))
     {
-        m_images[k] = img.scaledToWidth(ui->imageList->width());
-        for (auto i = 0; i < ui->imageList->count(); i++)
-            if (ui->imageList->item(i)->data(Qt::UserRole).toString() == k)
+        m_images[k] = img.scaledToWidth(imageList->width());
+        for (auto i = 0; i < imageList->count(); i++)
+            if (imageList->item(i)->data(Qt::UserRole).toString() == k)
             {
-                ui->imageList->item(i)->setIcon(QIcon(m_images[k]));
+                imageList->item(i)->setIcon(QIcon(m_images[k]));
                 break;
             }
     }
@@ -322,33 +457,35 @@ void MainWindow::systemInfo()
 
 void MainWindow::SetTextToLogConsole(QString const& text, bool isErrMsg)
 {
-    ui->output_log->clear();
+    output_log->clear();
     QString style = isErrMsg ? "font-weight:bold;color:red" : "";
-    ui->output_log->appendHtml("<p style=\"" + style + ";white-space:pre\">" + text + "</p>");
+    output_log->appendHtml("<p style=\"" + style + ";white-space:pre\">" + text + "</p>");
 }
 
 void MainWindow::AppendTextToLogConsole(QString const& text, bool isErrMsg)
 {
     QString style = isErrMsg ? "font-weight:bold;color:red" : "";
-    ui->output_log->appendHtml("<p style=\"" + style + ";white-space:pre\">" + text + "</p>");
-    ui->output_log->verticalScrollBar()->setValue(ui->output_log->verticalScrollBar()->maximum());
+    output_log->appendHtml("<p style=\"" + style + ";white-space:pre\">" + text + "</p>");
+    output_log->verticalScrollBar()->setValue(output_log->verticalScrollBar()->maximum());
 }
 
 void MainWindow::ClearLogConsole()
 {
-    ui->output_log->clear();
+    output_log->clear();
 }
 
 void MainWindow::SetDarkTheme()
 {
     SetTheme(":qdarkstyle/dark/darkstyle.qss");
-    ui->hist->setDarkTheme();
+    hist->setDarkTheme();
+    m_dock_manager->setStyleSheet(QString(M_ADS_STYLE_COMMON) + M_ADS_STYLE_DARK);
 }
 
 void MainWindow::SetLightTheme()
 {
     SetTheme(":qdarkstyle/light/lightstyle.qss");
-    ui->hist->setLightTheme();
+    hist->setLightTheme();
+    m_dock_manager->setStyleSheet(QString(M_ADS_STYLE_COMMON) + M_ADS_STYLE_LIGHT);
 }
 
 void MainWindow::SetTheme(QString const& qssFilePath)
@@ -368,16 +505,22 @@ void MainWindow::SetTheme(QString const& qssFilePath)
 
 void MainWindow::SetHist(QImage const& img)
 {
-    ui->hist->setImage(img);
+    hist->setImage(img);
 }
 
 void MainWindow::SetPathInfo(QString const& path)
 {
-    ui->info->setPath(path);
+    info->setPath(path);
 }
 
 void MainWindow::changeEvent(QEvent* event)
 {
     if (event && event->type() == QEvent::LanguageChange) ui->retranslateUi(this);
     QMainWindow::changeEvent(event);
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    m_dock_manager->deleteLater();
+    QMainWindow::closeEvent(event);
 }
