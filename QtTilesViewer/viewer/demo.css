@@ -1,0 +1,95 @@
+body {
+    background-color: rgb(65, 64, 64);
+}
+
+.content {
+    background-color: white;
+    text-align: left;
+    width: 100%;
+    padding: 15px;
+    position: relative;
+    margin: 0 auto;
+}
+
+.demo {
+    padding: 10px;
+    background-color: #fff;
+}
+
+.viewer {
+    position: relative;
+    width: 100%;
+    height: 60%;
+    border: thin black solid;
+    border-radius: 3px;
+    box-shadow: 0 5px 5px 5px gray;
+}
+
+.hidden {
+    display: none;
+}
+
+input[type="text"] {
+    width: 20em;
+}
+
+#file-info img {
+    max-width: 100%;
+    max-height: 150px;
+}
+
+h3,
+h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+p {
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 15px;
+}
+
+#openseadragon {
+    width: 100%;
+    height: 800px;
+    background-color: black;
+}
+
+.wdzt-table-layout {
+    display: table;
+}
+
+.wdzt-row-layout {
+    display: table-row;
+}
+
+.wdzt-cell-layout {
+    display: table-cell;
+}
+
+.wdzt-full-width {
+    width: 100%;
+}
+
+.wdzt-menu-slider {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.column-2 {
+    width: 50%;
+    vertical-align: top;
+    padding: 3px;
+}
+
+ul {
+    padding: 0;
+    border: 1px solid black;
+    min-height: 25px;
+}
+
+li {
+    padding: 3px;
+}
