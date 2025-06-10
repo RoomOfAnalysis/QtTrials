@@ -1,0 +1,112 @@
+<!doctype html>
+<meta charset="utf-8">
+
+<style type="text/css">
+    html {
+        overflow: hidden;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    div#view {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        color: white;
+    }
+</style>
+
+<div id="view"></div>
+
+<script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+<script type="text/javascript" src="openseadragon.min.js"></script>
+<script type="text/javascript" src="openseadragon-scalebar.js"></script>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript">
+    console.log("fuck 1");
+    $(function () {
+        console.log("fuck 2");
+        var viewer = new OpenSeadragon({
+            id: "view",
+            prefixUrl: "images/",
+            showNavigator: true,
+            showRotationControl: true,
+            animationTime: 0.5,
+            blendTime: 0.1,
+            constrainDuringPan: true,
+            maxZoomPixelRatio: 2,
+            minZoomImageRatio: 1,
+            visibilityRatio: 1,
+            zoomPerScroll: 2,
+            timeout: 120000,
+        });
+        viewer.scalebar({
+            xOffset: 10,
+            yOffset: 10,
+            barThickness: 3,
+            color: '#555555',
+            fontColor: '#333333',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        });
+
+        var slide_handler;
+        const channel = new QWebChannel(qt.webChannelTransport, function (channel) {
+            slide_handler = channel.objects.slide_handler;
+            slide_handler.sigNotify.connect(function (str) {
+                console.log(str);
+            });
+            slide_handler.mppChanged.connect(function (str) {
+                console.log(str);
+                viewer.scalebar({ pixelsPerMeter: (1e6 / parseFloat(str)) });
+            });
+            slide_handler.dziChanged.connect(function (str) {
+                console.log(str);
+                var tile_source = new OpenSeadragon.DziTileSource(
+                    OpenSeadragon.DziTileSource.prototype.configure(
+                        OpenSeadragon.parseXml(str), slide_handler.url));
+                tile_source.getTileUrl = function (level, x, y) {
+                    return "myscheme://" + level + "/" + x + "/" + y;
+                };
+                viewer.open(tile_source);
+                // viewer.open(new OpenSeadragon.DziTileSource(
+                //     OpenSeadragon.DziTileSource.prototype.configure(
+                //         OpenSeadragon.parseXml(str), slide_handler.url)));
+            });
+            slide_handler.openfile("test");
+            var tile_source = new OpenSeadragon.DziTileSource(
+                OpenSeadragon.DziTileSource.prototype.configure(
+                    OpenSeadragon.parseXml(slide_handler.dzi), slide_handler.url));
+            tile_source.getTileUrl = function (level, x, y) {
+                let url = new String(`${level}/${x}_${y}`);
+                url.fetch = (url) => slide_handler.getTileUrl(url);
+                return url;
+                //return "myscheme://" + level + "/" + x + "/" + y;  // not work with `M_WebUrlRequestInterceptor::interceptRequest`
+                //return "file:///" + level + "/" + x + "/" + y;  // this one can be seen in `M_WebUrlRequestInterceptor::interceptRequest`
+            };
+            tile_source.downloadTileStart = (context) => {
+                context.src.fetch(context.src).then((dataURL) => {
+                    let image = new Image();
+                    let request = "" + context.src;
+                    image.onload = function () {
+                        context.finish(image);
+                    };
+                    image.onerror = image.onabort = function () {
+                        context.finish(null, request, "Request aborted");
+                    };
+                    image.src = dataURL;
+                });
+            };
+            tile_source.downloadTileAbort = (context) => {
+                context.src.abortController && context.src.abortController.abort();
+            };
+            viewer.open(tile_source);
+            viewer.scalebar({ pixelsPerMeter: (1e6 / parseFloat(slide_handler.mpp)) });
+            console.log("fuck 3");
+        });
+    });
+</script>
