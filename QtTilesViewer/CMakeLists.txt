@@ -31,8 +31,6 @@ endif()
 
 find_package(pugixml CONFIG REQUIRED)
 
-find_package(JPEG REQUIRED)
-
 add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/main2.cpp
 )
@@ -47,7 +45,6 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt${QT_VERSION_MAJOR}::WebChannel
     PRIVATE ${openslide}
     PRIVATE pugixml::shared pugixml::pugixml
-    PRIVATE JPEG::JPEG
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
