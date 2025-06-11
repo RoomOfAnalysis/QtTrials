@@ -29,6 +29,32 @@
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript">
     console.log("fuck 1");
+    class M_DZI_TileSource extends OpenSeadragon.DziTileSource {
+        constructor(options, slide_handler) {
+            super(options);
+            this.getTileUrl = function (level, x, y) {
+                let url = new String(`${level}/${x}_${y}`);
+                url.fetch = (url) => slide_handler.getTileUrl(url);
+                return url;
+            }
+            this.downloadTileStart = (context) => {
+                context.src.fetch(context.src).then((dataURL) => {
+                    let image = new Image();
+                    let request = "" + context.src;
+                    image.onload = function () {
+                        context.finish(image);
+                    };
+                    image.onerror = image.onabort = function () {
+                        context.finish(null, request, "Request aborted");
+                    };
+                    image.src = dataURL;
+                });
+            }
+            this.downloadTileAbort = (context) => {
+                context.src.abortController && context.src.abortController.abort();
+            }
+        }
+    }
     $(function () {
         console.log("fuck 2");
         var viewer = new OpenSeadragon({
@@ -57,54 +83,19 @@
         var slide_handler;
         const channel = new QWebChannel(qt.webChannelTransport, function (channel) {
             slide_handler = channel.objects.slide_handler;
-            slide_handler.sigNotify.connect(function (str) {
-                console.log(str);
-            });
             slide_handler.mppChanged.connect(function (str) {
                 console.log(str);
                 viewer.scalebar({ pixelsPerMeter: (1e6 / parseFloat(str)) });
             });
             slide_handler.dziChanged.connect(function (str) {
                 console.log(str);
-                var tile_source = new OpenSeadragon.DziTileSource(
+                viewer.open(new M_DZI_TileSource(
                     OpenSeadragon.DziTileSource.prototype.configure(
-                        OpenSeadragon.parseXml(str), slide_handler.url));
-                tile_source.getTileUrl = function (level, x, y) {
-                    return "myscheme://" + level + "/" + x + "/" + y;
-                };
-                viewer.open(tile_source);
-                // viewer.open(new OpenSeadragon.DziTileSource(
-                //     OpenSeadragon.DziTileSource.prototype.configure(
-                //         OpenSeadragon.parseXml(str), slide_handler.url)));
+                        OpenSeadragon.parseXml(str), slide_handler.url), slide_handler));
             });
-            slide_handler.openfile("test");
-            var tile_source = new OpenSeadragon.DziTileSource(
+            viewer.open(new M_DZI_TileSource(
                 OpenSeadragon.DziTileSource.prototype.configure(
-                    OpenSeadragon.parseXml(slide_handler.dzi), slide_handler.url));
-            tile_source.getTileUrl = function (level, x, y) {
-                let url = new String(`${level}/${x}_${y}`);
-                url.fetch = (url) => slide_handler.getTileUrl(url);
-                return url;
-                //return "myscheme://" + level + "/" + x + "/" + y;  // not work with `M_WebUrlRequestInterceptor::interceptRequest`
-                //return "file:///" + level + "/" + x + "/" + y;  // this one can be seen in `M_WebUrlRequestInterceptor::interceptRequest`
-            };
-            tile_source.downloadTileStart = (context) => {
-                context.src.fetch(context.src).then((dataURL) => {
-                    let image = new Image();
-                    let request = "" + context.src;
-                    image.onload = function () {
-                        context.finish(image);
-                    };
-                    image.onerror = image.onabort = function () {
-                        context.finish(null, request, "Request aborted");
-                    };
-                    image.src = dataURL;
-                });
-            };
-            tile_source.downloadTileAbort = (context) => {
-                context.src.abortController && context.src.abortController.abort();
-            };
-            viewer.open(tile_source);
+                    OpenSeadragon.parseXml(slide_handler.dzi), slide_handler.url), slide_handler));
             viewer.scalebar({ pixelsPerMeter: (1e6 / parseFloat(slide_handler.mpp)) });
             console.log("fuck 3");
         });
