@@ -53,6 +53,51 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         $<TARGET_FILE_DIR:${PROJECT_NAME}>
 )
 
+find_library(QCefView
+    NAMES QCefView
+    PATHS ENV QCefView_LIB_PATH
+    NO_CACHE
+    REQUIRED
+)
+if (${openslide} STREQUAL "QCefView-NOTFOUND")
+    message(FATAL_ERROR "required QCefView library but not found!")
+else()
+    message(STATUS "QCefView library found in ${QCefView}")
+    get_filename_component(QCefView_lib_dir ${QCefView} PATH)
+    get_filename_component(QCefView_dir ${QCefView_lib_dir} PATH)
+    set(QCefView_INCLUDE_DIRS ${QCefView_dir}/include/)
+    message(STATUS "QCefView include dirs: ${QCefView_INCLUDE_DIRS}")
+endif()
+
+add_executable(${PROJECT_NAME}_cef
+    ${CMAKE_CURRENT_SOURCE_DIR}/main3.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_cef
+    PRIVATE ${openslide_INCLUDE_DIRS}
+    PRIVATE ${QCefView_INCLUDE_DIRS}
+)
+
+target_link_libraries(${PROJECT_NAME}_cef
+    PRIVATE Qt${QT_VERSION_MAJOR}::Core
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+    PRIVATE Qt${QT_VERSION_MAJOR}::Gui
+    PRIVATE ${openslide}
+    PRIVATE ${QCefView}
+)
+
+add_custom_command(TARGET ${PROJECT_NAME}_cef POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${openslide_dir}/bin/libopenslide-1.dll"
+        "${QCefView_dir}/bin/QCefView.dll"
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>
+)
+add_custom_command(TARGET ${PROJECT_NAME}_cef POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${QCefView_dir}/bin/CefView/"
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/CefView
+)
+
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_property(TARGET ${PROJECT_NAME} PROPERTY WIN32_EXECUTABLE TRUE)
 endif()

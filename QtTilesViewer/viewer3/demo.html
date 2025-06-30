@@ -1,0 +1,104 @@
+<!doctype html>
+<meta charset="utf-8">
+
+<style type="text/css">
+    html {
+        overflow: hidden;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    div#view {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        color: white;
+    }
+</style>
+
+<div id="view"></div>
+
+<script type="text/javascript" src="openseadragon.min.js"></script>
+<script type="text/javascript" src="openseadragon-scalebar.js"></script>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript">
+    console.log("fuck 1");
+    class M_DZI_TileSource extends OpenSeadragon.DziTileSource {
+        constructor(options) {
+            super(options);
+            this.getTileUrl = function (level, x, y) {
+                let url = new String(`${level}/${x}_${y}`);
+                url.fetch = (context) => {
+                    url = context.src;
+                    //console.log(url);
+                    var query = {
+                        request: url.toString(),
+                        onSuccess: function (response) {
+                            //console.log(response);
+
+                            let image = new Image();
+                            image.onload = function () {
+                                context.finish(image);
+                            };
+                            image.onerror = image.onabort = function () {
+                                context.finish(null, url.toString(), "Request aborted");
+                            };
+                            image.src = response;
+                        },
+                        onFailure: function (error_code, error_message) {
+                            window.alert("Failure: " + error_message + " (Error Code: " + error_code + ")");
+                        }
+                    };
+                    window.cefViewQuery(query);
+                };
+                return url;
+            }
+            this.downloadTileStart = (context) => {
+                context.src.fetch(context);
+            }
+            this.downloadTileAbort = (context) => {
+                context.src.abortController && context.src.abortController.abort();
+            }
+        }
+    }
+    $(function () {
+        console.log("fuck 2");
+        var viewer = new OpenSeadragon({
+            id: "view",
+            prefixUrl: "images/",
+            showNavigator: true,
+            showRotationControl: true,
+            animationTime: 0.5,
+            blendTime: 0.1,
+            constrainDuringPan: true,
+            maxZoomPixelRatio: 2,
+            minZoomImageRatio: 1,
+            visibilityRatio: 1,
+            zoomPerScroll: 2,
+            timeout: 120000,
+        });
+        viewer.scalebar({
+            xOffset: 10,
+            yOffset: 10,
+            barThickness: 3,
+            color: '#555555',
+            fontColor: '#333333',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        });
+
+        function onUrlChanged(url, dzi, mpp) {
+            console.log(url, dzi, mpp);
+            viewer.open(new M_DZI_TileSource(
+                OpenSeadragon.DziTileSource.prototype.configure(
+                    OpenSeadragon.parseXml(dzi), url)));
+            viewer.scalebar({ pixelsPerMeter: (1e6 / parseFloat(mpp)) });
+            console.log("fuck 3");
+        }
+        window.CallBridge.addEventListener("UrlChanged", onUrlChanged);
+    });
+</script>
