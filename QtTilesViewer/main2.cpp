@@ -257,20 +257,7 @@ public slots:
         // https://openslide.org/docs/premultiplied-argb/
         auto buf = std::make_unique<uint32_t[]>(width * height);
         openslide_read_region(m_slide, buf.get(), xx, yy, slide_level, width, height);
-        std::vector<uint8_t> data;
-        data.reserve(width * height * 4);
-        uint32_t p = 0;
-        for (int64_t i = 0; i < width * height; i++)
-        {
-            p = buf[i];
-            // according to the docs: OpenSlide emits samples as uint32_t, so on little-endian systems the output will need to be byte-swapped relative to the input.
-            // i have to reverse the order to obtain the correct color
-            data.push_back(p);       // b
-            data.push_back(p >> 8);  // g
-            data.push_back(p >> 16); // r
-            data.push_back(p >> 24); // a
-        }
-        auto img = QImage((const uchar*)data.data(), width, height, QImage::Format_ARGB32_Premultiplied)
+        auto img = QImage((const uchar*)buf.get(), width, height, QImage::Format_ARGB32_Premultiplied)
                        .scaled(z_size.first, z_size.second, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         auto dataUrl = imageToBase64Url(img);
         // qDebug() << dataUrl;
